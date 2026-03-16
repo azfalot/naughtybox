@@ -1,0 +1,97 @@
+# Naughtybox – all services for local/dev
+# Run from repo root: docker compose -f infra/docker/docker-compose.yml up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: naughtybox
+      POSTGRES_PASSWORD: naughtybox
+      POSTGRES_DB: naughtybox
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U naughtybox"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  coturn:
+    image: coturn/coturn:latest
+    command: ["-n", "--log-file=stdout"]
+    ports:
+      - "3478:3478"
+      - "5349:5349"
+    restart: unless-stopped
+    # TURN/STUN for WebRTC; configure as needed for production
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: apps/backend/Dockerfile
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: naughtybox
+      DB_PASSWORD: naughtybox
+      DB_NAME: naughtybox
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  streaming:
+    build:
+      context: ../..
+      dockerfile: apps/streaming/Dockerfile
+    environment:
+      NODE_ENV: production
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      COTURN_HOST: coturn
+      COTURN_PORT: 3478
+    depends_on:
+      redis:
+        condition: service_healthy
+      coturn:
+        condition: service_started
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../..
+      dockerfile: apps/frontend/Dockerfile
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "4200:80"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: naughtybox-net
