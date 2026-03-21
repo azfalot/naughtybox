@@ -8,23 +8,24 @@ import { ChatApiService } from '../services/chat-api.service';
 import { StreamsApiService } from '../services/streams-api.service';
 import { WalletApiService } from '../services/wallet-api.service';
 
-type VirtualCreatorProfile = {
-  avatar: string;
+type CreatorSummary = {
   headline: string;
   bio: string;
 };
 
-const DEFAULT_PROFILE: VirtualCreatorProfile = {
-  avatar: '/assets/models/sara-bloom.svg',
-  headline: 'Creator-first live room',
-  bio: 'Perfil virtual de referencia para validar branding, tono visual y densidad de la sala.',
+const DEFAULT_PROFILE: CreatorSummary = {
+  headline: 'Live room',
+  bio: 'Sala pública pensada para emitir, conversar y validar la experiencia principal del producto con una lectura más limpia.',
 };
 
-const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
-  'sara-night-show': {
-    avatar: '/assets/models/sara-bloom.svg',
-    headline: 'Streaming nocturno premium',
-    bio: 'Sara Bloom es una creadora virtual ficticia pensada para validar la identidad visual de Naughtybox: cercana, elegante y claramente adulta.',
+const CREATOR_PROFILES: Record<string, CreatorSummary> = {
+  'luna-en-directo': {
+    headline: 'Sala orientada a catálogo',
+    bio: 'Luna representa un perfil directo: foco total en el vídeo, chat lateral y una biografía sobria para no romper la jerarquía visual.',
+  },
+  'jade-after-hours': {
+    headline: 'Sesión nocturna',
+    bio: 'Jade sirve como referencia para validar una sala algo más editorial, manteniendo el vídeo protagonista y los datos secundarios contenidos.',
   },
 };
 
@@ -61,12 +62,12 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
 
             <div class="creator-grid creator-grid-tight">
               <div>
-                <p class="muted stat-label">Categorías</p>
+                <p class="muted stat-label">Categorias</p>
                 <strong>{{ stream()!.tags.join(' · ') || 'General' }}</strong>
               </div>
               <div>
                 <p class="muted stat-label">Estado</p>
-                <strong>{{ stream()!.isLive ? 'Emitiendo ahora' : 'Sin emisión' }}</strong>
+                <strong>{{ stream()!.isLive ? 'Emitiendo ahora' : 'Sin emision' }}</strong>
               </div>
               <div>
                 <p class="muted stat-label">Acceso al chat</p>
@@ -77,17 +78,8 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
 
           <section class="panel-card room-summary">
             <h2 class="mini-title">Sobre la creadora</h2>
-            <div class="creator-profile">
-              <img
-                class="creator-avatar"
-                [src]="creatorProfile().avatar"
-                [alt]="'Avatar virtual de ' + stream()!.creatorName"
-              />
-              <div>
-                <strong>{{ creatorProfile().headline }}</strong>
-                <p class="muted room-bio">{{ creatorProfile().bio }}</p>
-              </div>
-            </div>
+            <strong>{{ creatorSummary().headline }}</strong>
+            <p class="muted room-bio">{{ creatorSummary().bio }}</p>
           </section>
         </div>
 
@@ -116,7 +108,7 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
 
             <ng-template #loginForChat>
               <div class="chat-locked">
-                <p class="muted">El chat queda reservado a usuarios registrados para moderación y seguridad.</p>
+                <p class="muted">El chat queda reservado a usuarios registrados para moderacion y seguridad.</p>
                 <a class="text-link" routerLink="/login">Entrar para chatear</a>
               </div>
             </ng-template>
@@ -159,7 +151,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   readonly loading = signal(true);
   readonly error = signal('');
   readonly notice = signal('');
-  readonly creatorProfile = signal<VirtualCreatorProfile>(DEFAULT_PROFILE);
+  readonly creatorSummary = signal<CreatorSummary>(DEFAULT_PROFILE);
   readonly messages = signal<ChatMessage[]>([]);
   readonly wallet = signal<WalletSummary | null>(null);
 
@@ -167,7 +159,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     const slug = this.route.snapshot.paramMap.get('slug');
 
     if (!slug) {
-      this.error.set('Sala no válida.');
+      this.error.set('Sala no valida.');
       this.loading.set(false);
       return;
     }
@@ -238,7 +230,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
 
     const stream = await this.streamsApi.getStream(slug);
     this.stream.set(stream);
-    this.creatorProfile.set(VIRTUAL_CREATOR_PROFILES[slug] ?? DEFAULT_PROFILE);
+    this.creatorSummary.set(CREATOR_PROFILES[slug] ?? DEFAULT_PROFILE);
     this.error.set('');
 
     if (showLoader) {

@@ -115,14 +115,14 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
     const creators = [
       {
-        email: 'sara@naughtybox.local',
-        username: 'sarabloom',
-        displayName: 'Sara Bloom',
-        slug: 'sara-night-show',
-        title: 'Sara Night Show',
-        description: 'Sala virtual de referencia para validar identidad, room layout y onboarding de creadoras.',
+        email: 'nora@naughtybox.local',
+        username: 'noravale',
+        displayName: 'Nora Vale',
+        slug: 'nora-after-dark',
+        title: 'Nora After Dark',
+        description: 'Sala seed para validar el lobby principal sin depender de personajes virtuales.',
         tags: ['night', 'spanish', 'creator'],
-        avatarUrl: '/assets/models/sara-bloom.svg',
+        avatarUrl: null,
         accentColor: '#ff5b73',
       },
       {
