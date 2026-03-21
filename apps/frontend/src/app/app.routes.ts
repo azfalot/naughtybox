@@ -4,6 +4,7 @@ import { CreatorStudioPageComponent } from './pages/creator-studio-page.componen
 import { LoginPageComponent } from './pages/login-page.component';
 import { RegisterPageComponent } from './pages/register-page.component';
 import { StreamPageComponent } from './pages/stream-page.component';
+import { LegalPageComponent } from './pages/legal-page.component';
 
 export const routes: Routes = [
   {
@@ -25,5 +26,9 @@ export const routes: Routes = [
   {
     path: 'studio',
     component: CreatorStudioPageComponent,
+  },
+  {
+    path: 'legal/:section',
+    component: LegalPageComponent,
   },
 ];

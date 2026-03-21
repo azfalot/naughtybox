@@ -51,6 +51,7 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
                   {{ stream()!.isLive ? 'En directo' : 'Offline' }}
                 </span>
                 <span class="viewer-pill">{{ stream()!.currentViewers || 0 }} viendo</span>
+                <a class="text-link" routerLink="/legal/18plus">Reportar</a>
               </div>
             </div>
 
@@ -205,8 +206,8 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
           <section class="panel-card">
             <h2 class="mini-title">Acceso premium</h2>
             <ul class="helper-list">
-              <li>Private shows por tokens</li>
-              <li>Chat solo para tippers o miembros</li>
+              <li>Private shows: acceso por pago puntual o membresia activa del creador</li>
+              <li>Chat configurable: publico, solo registrados, solo tippers o solo miembros</li>
               <li>Integracion futura de toys conectados</li>
             </ul>
           </section>

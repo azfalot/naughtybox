@@ -9,6 +9,26 @@ import { AuthApiService } from './services/auth-api.service';
   imports: [CommonModule, RouterOutlet, RouterLink],
   template: `
     <div class="app-shell">
+      <section *ngIf="!ageConfirmed()" class="age-gate-backdrop">
+        <div class="panel-card age-gate-card">
+          <p class="eyebrow">18+ only</p>
+          <h2 class="mini-title" style="margin-bottom: 8px;">Acceso restringido a adultos</h2>
+          <p class="muted">
+            Naughtybox es una plataforma para mayores de edad. Al continuar declaras que tienes 18 anos o mas y aceptas revisar nuestras normas basicas.
+          </p>
+          <div class="age-gate-actions">
+            <button type="button" class="text-link text-link-solid" (click)="confirmAge()">Soy mayor de edad</button>
+            <a class="text-link" href="https://www.google.es" rel="noreferrer">Salir</a>
+          </div>
+          <div class="age-gate-links">
+            <a routerLink="/legal/terms">Terminos</a>
+            <a routerLink="/legal/privacy">Privacidad</a>
+            <a routerLink="/legal/cookies">Cookies</a>
+            <a routerLink="/legal/18plus">Seguridad 18+</a>
+          </div>
+        </div>
+      </section>
+
       <header class="topbar">
         <a class="brand" routerLink="/">
           <span
@@ -59,6 +79,13 @@ import { AuthApiService } from './services/auth-api.service';
             Copyright (c) 2026 Naughtybox. All rights reserved. Branding, interface,
             software, layout systems and platform assets are protected intellectual property.
           </p>
+          <div class="footer-links">
+            <a routerLink="/legal/terms">Terminos</a>
+            <a routerLink="/legal/privacy">Privacidad</a>
+            <a routerLink="/legal/cookies">Cookies</a>
+            <a routerLink="/legal/18plus">18+</a>
+            <a routerLink="/legal/creators">Creator guide</a>
+          </div>
         </div>
         <p class="muted">
           Demo environment for product validation. Third-party content is not embedded or redistributed.
@@ -78,6 +105,7 @@ export class AppComponent implements OnDestroy {
   });
 
   readonly activeModule = signal<'grid' | 'room' | 'system'>(this.resolveModule(this.router.url));
+  readonly ageConfirmed = signal(this.readAgeGate());
   readonly accountLabel = computed(() => {
     const role = this.authApi.user()?.role;
     if (role === 'creator') {
@@ -99,6 +127,13 @@ export class AppComponent implements OnDestroy {
     await this.router.navigateByUrl('/');
   }
 
+  confirmAge() {
+    this.ageConfirmed.set(true);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('naughtybox.age-confirmed', 'true');
+    }
+  }
+
   private resolveModule(url: string): 'grid' | 'room' | 'system' {
     if (url.startsWith('/streams/')) {
       return 'room';
@@ -109,5 +144,13 @@ export class AppComponent implements OnDestroy {
     }
 
     return 'grid';
+  }
+
+  private readAgeGate() {
+    if (typeof localStorage === 'undefined') {
+      return false;
+    }
+
+    return localStorage.getItem('naughtybox.age-confirmed') === 'true';
   }
 }

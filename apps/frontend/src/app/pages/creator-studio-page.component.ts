@@ -195,6 +195,30 @@ import { WalletApiService } from '../services/wallet-api.service';
             </div>
           </section>
 
+          <section class="panel-card">
+            <h2 class="mini-title">Centro para creadoras</h2>
+            <div class="resource-stack">
+              <a class="resource-card" routerLink="/legal/creators">
+                <strong>Guia operativa</strong>
+                <span>Onboarding, payouts, ranking, perfil y buenas practicas.</span>
+              </a>
+              <a class="resource-card" routerLink="/legal/18plus">
+                <strong>Mayoría de edad y compliance</strong>
+                <span>Verificacion, consentimiento, reportes y moderacion.</span>
+              </a>
+              <a class="resource-card" routerLink="/legal/privacy">
+                <strong>Privacidad y datos</strong>
+                <span>Que datos tratamos y por que necesitamos procesos reforzados.</span>
+              </a>
+            </div>
+
+            <ul class="helper-list" style="margin-top: 14px;">
+              <li>Contenido orientativo sobre alta, facturacion y declaracion de ingresos en Espana.</li>
+              <li>Metricas utiles para conversion: viewers, follows, tips y rendimiento por franja.</li>
+              <li>Configuracion futura de payouts, suscripciones, privados y juguetes conectados.</li>
+            </ul>
+          </section>
+
           <section class="panel-card" *ngIf="wallet() as wallet">
             <div class="chat-header">
               <h2 class="mini-title" style="margin: 0;">Wallet</h2>
