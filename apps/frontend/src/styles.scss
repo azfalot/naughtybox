@@ -1,20 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import 'primeicons/primeicons.css';
 
 :root {
   color-scheme: dark;
-  --bg-top: #170b17;
-  --bg-bottom: #09040d;
-  --panel: rgba(22, 14, 24, 0.92);
+  --bg-top: #0b2224;
+  --bg-bottom: #041214;
+  --panel: rgba(9, 25, 27, 0.94);
   --line: rgba(255, 255, 255, 0.08);
-  --text: #f7f1f8;
-  --muted: #beaec2;
-  --accent: #ff5974;
-  --accent-2: #ff8f73;
-  --accent-3: #ffd7ca;
-  --accent-teal: #1bb7a7;
+  --text: #f3f1ea;
+  --muted: #aac0bb;
+  --accent: #159f95;
+  --accent-2: #ff8a3d;
+  --accent-3: #ffd5b0;
+  --accent-teal: #159f95;
   --shadow-lg: 0 22px 60px rgba(0, 0, 0, 0.35);
   --shadow-sm: 0 10px 26px rgba(0, 0, 0, 0.22);
 }
@@ -29,8 +28,8 @@ body {
   font-family: Inter, 'Segoe UI', system-ui, sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at top, rgba(255, 89, 116, 0.14), transparent 18%),
-    radial-gradient(circle at 18% 14%, rgba(27, 183, 167, 0.08), transparent 16%),
+    radial-gradient(circle at top, rgba(255, 138, 61, 0.12), transparent 18%),
+    radial-gradient(circle at 18% 14%, rgba(21, 159, 149, 0.1), transparent 16%),
     linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
 }
 
@@ -365,8 +364,8 @@ button {
   inset: 0;
   background:
     linear-gradient(180deg, rgba(8, 6, 14, 0.04), transparent 35%, rgba(8, 6, 14, 0.82)),
-    radial-gradient(circle at 70% 18%, rgba(27, 183, 167, 0.14), transparent 24%),
-    radial-gradient(circle at 30% 20%, rgba(255, 143, 115, 0.14), transparent 24%);
+    radial-gradient(circle at 70% 18%, rgba(21, 159, 149, 0.16), transparent 24%),
+    radial-gradient(circle at 30% 20%, rgba(255, 138, 61, 0.16), transparent 24%);
 }
 
 .catalog-monogram {
@@ -417,6 +416,19 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(8, 6, 14, 0.66);
   color: #fff;
+}
+
+.symbol-heart,
+.meta-symbol,
+.catalog-gender {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.symbol-heart {
+  font-size: 0.96rem;
 }
 
 .status-tag {
@@ -472,6 +484,18 @@ button {
 .catalog-meta-row,
 .catalog-description {
   font-size: 0.74rem;
+}
+
+.catalog-gender {
+  min-width: 22px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent-3);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
 .catalog-description {

@@ -9,7 +9,7 @@ type LobbySection = 'home' | 'discover' | 'tags' | 'private' | 'following';
 
 type StreamMeta = {
   age: number;
-  genderIcon: string;
+  genderBadge: string;
   countryFlag: string;
   countryLabel: string;
   durationLabel: string;
@@ -27,26 +27,10 @@ type DisplayStream = StreamSummary &
     targetSlug: string;
   };
 
-type DemoSeed = {
-  creatorName: string;
-  title: string;
-  tags: string[];
-  currentViewers: number;
-  age: number;
-  countryFlag: string;
-  countryLabel: string;
-  durationLabel: string;
-  badgeLabel?: string;
-  badgeTone?: 'new' | 'vip';
-  following?: boolean;
-  likes: number;
-  messageCount: number;
-};
-
 const REAL_STREAM_META: Record<string, StreamMeta> = {
   'luna-en-directo': {
     age: 24,
-    genderIcon: 'pi pi-user',
+    genderBadge: 'F',
     countryFlag: 'ES',
     countryLabel: 'Espana',
     durationLabel: '12 mins',
@@ -58,7 +42,7 @@ const REAL_STREAM_META: Record<string, StreamMeta> = {
   },
   'jade-after-hours': {
     age: 27,
-    genderIcon: 'pi pi-user',
+    genderBadge: 'F',
     countryFlag: 'MX',
     countryLabel: 'Mexico',
     durationLabel: '37 mins',
@@ -70,7 +54,7 @@ const REAL_STREAM_META: Record<string, StreamMeta> = {
   },
   'nora-after-dark': {
     age: 22,
-    genderIcon: 'pi pi-user',
+    genderBadge: 'F',
     countryFlag: 'AR',
     countryLabel: 'Argentina',
     durationLabel: '8 mins',
@@ -82,7 +66,7 @@ const REAL_STREAM_META: Record<string, StreamMeta> = {
   },
   'lucia-velvet-live': {
     age: 26,
-    genderIcon: 'pi pi-user',
+    genderBadge: 'F',
     countryFlag: 'ES',
     countryLabel: 'Espana',
     durationLabel: '15 mins',
@@ -92,35 +76,87 @@ const REAL_STREAM_META: Record<string, StreamMeta> = {
     likes: 156,
     messageCount: 47,
   },
+  'maya-costa-live': {
+    age: 23,
+    genderBadge: 'F',
+    countryFlag: 'ES',
+    countryLabel: 'Espana',
+    durationLabel: '18 mins',
+    badgeLabel: 'NEW',
+    badgeTone: 'new',
+    likes: 108,
+    messageCount: 29,
+  },
+  'kiara-rio-live': {
+    age: 25,
+    genderBadge: 'F',
+    countryFlag: 'CO',
+    countryLabel: 'Colombia',
+    durationLabel: '27 mins',
+    likes: 123,
+    messageCount: 35,
+  },
+  'sofia-velvet-room': {
+    age: 28,
+    genderBadge: 'F',
+    countryFlag: 'AR',
+    countryLabel: 'Argentina',
+    durationLabel: '31 mins',
+    badgeLabel: 'VIP',
+    badgeTone: 'vip',
+    likes: 141,
+    messageCount: 41,
+  },
+  'alex-nero-live': {
+    age: 29,
+    genderBadge: 'M',
+    countryFlag: 'ES',
+    countryLabel: 'Espana',
+    durationLabel: '22 mins',
+    likes: 92,
+    messageCount: 21,
+  },
+  'marco-blaze-room': {
+    age: 27,
+    genderBadge: 'M',
+    countryFlag: 'IT',
+    countryLabel: 'Italia',
+    durationLabel: '14 mins',
+    badgeLabel: 'NEW',
+    badgeTone: 'new',
+    likes: 76,
+    messageCount: 18,
+  },
+  'diego-wave-live': {
+    age: 30,
+    genderBadge: 'M',
+    countryFlag: 'MX',
+    countryLabel: 'Mexico',
+    durationLabel: '39 mins',
+    likes: 119,
+    messageCount: 32,
+  },
+  'alma-noah-duo': {
+    age: 26,
+    genderBadge: 'MF',
+    countryFlag: 'ES',
+    countryLabel: 'Espana',
+    durationLabel: '41 mins',
+    badgeLabel: 'VIP',
+    badgeTone: 'vip',
+    likes: 166,
+    messageCount: 44,
+  },
+  'leo-iris-duo': {
+    age: 24,
+    genderBadge: 'MM',
+    countryFlag: 'PT',
+    countryLabel: 'Portugal',
+    durationLabel: '16 mins',
+    likes: 88,
+    messageCount: 22,
+  },
 };
-
-const DEMO_SEEDS: DemoSeed[] = [
-  { creatorName: 'Lola Mar', title: 'Late Night Lobby', tags: ['chat', 'vip'], currentViewers: 182, age: 23, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '48 mins', badgeLabel: 'NEW', badgeTone: 'new', following: true, likes: 96, messageCount: 34 },
-  { creatorName: 'Mia Costa', title: 'Soft Neon Room', tags: ['es', 'afterhours'], currentViewers: 124, age: 21, countryFlag: 'AR', countryLabel: 'Argentina', durationLabel: '19 mins', badgeLabel: 'VIP', badgeTone: 'vip', likes: 71, messageCount: 21 },
-  { creatorName: 'Vera Luz', title: 'Prime Show', tags: ['new', 'chat'], currentViewers: 212, age: 25, countryFlag: 'CO', countryLabel: 'Colombia', durationLabel: '52 mins', badgeLabel: 'NEW', badgeTone: 'new', likes: 131, messageCount: 42 },
-  { creatorName: 'Nora Vale', title: 'Pink Session', tags: ['vip', 'night'], currentViewers: 87, age: 20, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '14 mins', likes: 54, messageCount: 16 },
-  { creatorName: 'Alba Noir', title: 'Slow Room', tags: ['es', 'soft'], currentViewers: 64, age: 22, countryFlag: 'UY', countryLabel: 'Uruguay', durationLabel: '9 mins', badgeLabel: 'NEW', badgeTone: 'new', likes: 43, messageCount: 12 },
-  { creatorName: 'Duna Vega', title: 'Open Chat', tags: ['public', 'live'], currentViewers: 201, age: 24, countryFlag: 'CL', countryLabel: 'Chile', durationLabel: '41 mins', following: true, likes: 118, messageCount: 39 },
-  { creatorName: 'Iris Bloom', title: 'Midnight Club', tags: ['vip', 'club'], currentViewers: 96, age: 26, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '22 mins', badgeLabel: 'VIP', badgeTone: 'vip', likes: 63, messageCount: 18 },
-  { creatorName: 'Kora Sun', title: 'Sunset Cam', tags: ['beach', 'es'], currentViewers: 149, age: 23, countryFlag: 'BR', countryLabel: 'Brasil', durationLabel: '31 mins', likes: 89, messageCount: 27 },
-  { creatorName: 'Eva Fuego', title: 'Hotline Room', tags: ['afterhours', 'chat'], currentViewers: 188, age: 28, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '56 mins', badgeLabel: 'VIP', badgeTone: 'vip', likes: 121, messageCount: 33 },
-  { creatorName: 'Lina Gold', title: 'Studio Night', tags: ['vip', 'gold'], currentViewers: 77, age: 24, countryFlag: 'PE', countryLabel: 'Peru', durationLabel: '11 mins', likes: 49, messageCount: 14 },
-  { creatorName: 'Mara Blue', title: 'Blue Light Live', tags: ['soft', 'live'], currentViewers: 143, age: 29, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '25 mins', likes: 82, messageCount: 26 },
-  { creatorName: 'Nina Drift', title: 'Private Mood', tags: ['private', 'vip'], currentViewers: 52, age: 22, countryFlag: 'MX', countryLabel: 'Mexico', durationLabel: '6 mins', badgeLabel: 'NEW', badgeTone: 'new', likes: 37, messageCount: 9 },
-  { creatorName: 'Olga Mint', title: 'Mint Room', tags: ['chat', 'new'], currentViewers: 119, age: 20, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '18 mins', badgeLabel: 'NEW', badgeTone: 'new', likes: 73, messageCount: 19 },
-  { creatorName: 'Paula Vox', title: 'Night Call', tags: ['es', 'call'], currentViewers: 169, age: 27, countryFlag: 'AR', countryLabel: 'Argentina', durationLabel: '44 mins', likes: 101, messageCount: 31 },
-  { creatorName: 'Rita Wave', title: 'Wave Lounge', tags: ['lounge', 'public'], currentViewers: 132, age: 25, countryFlag: 'PT', countryLabel: 'Portugal', durationLabel: '16 mins', likes: 79, messageCount: 24 },
-  { creatorName: 'Sonia Red', title: 'Red Room', tags: ['night', 'live'], currentViewers: 204, age: 24, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '58 mins', following: true, likes: 128, messageCount: 37 },
-  { creatorName: 'Tina Lux', title: 'Lux Session', tags: ['vip', 'lux'], currentViewers: 98, age: 23, countryFlag: 'CO', countryLabel: 'Colombia', durationLabel: '13 mins', badgeLabel: 'VIP', badgeTone: 'vip', likes: 66, messageCount: 17 },
-  { creatorName: 'Uma Star', title: 'Star Lounge', tags: ['new', 'chat'], currentViewers: 73, age: 21, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '7 mins', badgeLabel: 'NEW', badgeTone: 'new', likes: 45, messageCount: 11 },
-  { creatorName: 'Vicky Ash', title: 'Ash Club', tags: ['club', 'vip'], currentViewers: 156, age: 26, countryFlag: 'VE', countryLabel: 'Venezuela', durationLabel: '33 mins', likes: 92, messageCount: 28 },
-  { creatorName: 'Yara Moon', title: 'Moon Light', tags: ['moon', 'es'], currentViewers: 110, age: 20, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '15 mins', likes: 68, messageCount: 22 },
-  { creatorName: 'Zoe Night', title: 'Night Shift', tags: ['shift', 'live'], currentViewers: 175, age: 25, countryFlag: 'CL', countryLabel: 'Chile', durationLabel: '39 mins', likes: 109, messageCount: 35 },
-  { creatorName: 'Aina Soul', title: 'Soul Room', tags: ['soft', 'private'], currentViewers: 59, age: 22, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '5 mins', likes: 36, messageCount: 10 },
-  { creatorName: 'Berta Sky', title: 'Sky Cam', tags: ['sky', 'public'], currentViewers: 140, age: 24, countryFlag: 'AR', countryLabel: 'Argentina', durationLabel: '27 mins', likes: 84, messageCount: 25 },
-  { creatorName: 'Celia Rush', title: 'Rush Hour', tags: ['rush', 'chat'], currentViewers: 163, age: 28, countryFlag: 'ES', countryLabel: 'Espana', durationLabel: '32 mins', likes: 97, messageCount: 29 },
-  { creatorName: 'Dana Kiss', title: 'Kiss Room', tags: ['vip', 'night'], currentViewers: 116, age: 23, countryFlag: 'MX', countryLabel: 'Mexico', durationLabel: '17 mins', badgeLabel: 'VIP', badgeTone: 'vip', likes: 74, messageCount: 20 },
-];
 
 @Component({
   selector: 'app-home-page',
@@ -172,7 +208,7 @@ const DEMO_SEEDS: DemoSeed[] = [
             <div class="catalog-overlay">
               <div class="catalog-topline">
                 <button type="button" class="follow-badge" (click)="toggleFollow(stream, $event)">
-                  <i [class]="stream.following ? 'pi pi-heart-fill' : 'pi pi-heart'"></i>
+                  <span class="symbol-heart">{{ stream.following ? '♥' : '♡' }}</span>
                 </button>
                 <span *ngIf="stream.badgeLabel" [class]="'status-tag status-tag-' + (stream.badgeTone ?? 'new')">
                   {{ stream.badgeLabel }}
@@ -184,11 +220,11 @@ const DEMO_SEEDS: DemoSeed[] = [
                   <div class="catalog-identity">
                     <strong>{{ stream.creatorName }}</strong>
                     <span class="catalog-age">{{ stream.age }}</span>
-                    <i [class]="stream.genderIcon"></i>
+                    <span class="catalog-gender">{{ stream.genderBadge }}</span>
                     <span class="catalog-flag">{{ stream.countryFlag }}</span>
                   </div>
                   <div class="catalog-meta-row">
-                    <span><i class="pi pi-map-marker"></i> {{ stream.countryLabel }}</span>
+                    <span><span class="meta-symbol">◉</span> {{ stream.countryLabel }}</span>
                   </div>
                   <span class="catalog-description">{{ stream.title }}</span>
                   <div class="catalog-meta-row">
@@ -199,11 +235,11 @@ const DEMO_SEEDS: DemoSeed[] = [
 
                 <div class="catalog-metrics">
                   <span class="metric-chip">
-                    <i class="pi pi-heart-fill"></i>
+                    <span class="meta-symbol">♥</span>
                     {{ stream.likes }}
                   </span>
                   <span class="metric-chip">
-                    <i class="pi pi-comment"></i>
+                    <span class="meta-symbol">💬</span>
                     {{ stream.messageCount }}
                   </span>
                 </div>
@@ -310,18 +346,17 @@ export class HomePageComponent implements OnInit, OnDestroy {
 
   private populateDisplayStreams(streams: StreamSummary[]) {
     const palette = [
-      'linear-gradient(135deg, rgba(255, 95, 122, 0.26), rgba(255, 145, 115, 0.18), rgba(16, 11, 24, 0.92))',
-      'linear-gradient(135deg, rgba(255, 120, 146, 0.24), rgba(27, 183, 167, 0.16), rgba(18, 13, 29, 0.92))',
-      'linear-gradient(135deg, rgba(255, 168, 126, 0.20), rgba(255, 89, 116, 0.18), rgba(12, 10, 20, 0.94))',
-      'linear-gradient(135deg, rgba(255, 214, 203, 0.16), rgba(27, 183, 167, 0.18), rgba(12, 10, 20, 0.94))',
+      'linear-gradient(135deg, rgba(21, 159, 149, 0.32), rgba(255, 138, 61, 0.18), rgba(7, 18, 20, 0.94))',
+      'linear-gradient(135deg, rgba(255, 138, 61, 0.26), rgba(21, 159, 149, 0.14), rgba(7, 18, 20, 0.94))',
+      'linear-gradient(135deg, rgba(255, 213, 176, 0.16), rgba(21, 159, 149, 0.18), rgba(7, 18, 20, 0.94))',
+      'linear-gradient(135deg, rgba(21, 159, 149, 0.18), rgba(255, 213, 176, 0.16), rgba(7, 18, 20, 0.94))',
     ];
 
-    const targetFallback = streams[0]?.slug ?? '';
     const realCards: DisplayStream[] = streams.map((stream, index) => ({
       ...stream,
       ...REAL_STREAM_META[stream.slug],
       accent: palette[index % palette.length],
-      genderIcon: REAL_STREAM_META[stream.slug]?.genderIcon ?? 'pi pi-user',
+      genderBadge: REAL_STREAM_META[stream.slug]?.genderBadge ?? 'F',
       age: REAL_STREAM_META[stream.slug]?.age ?? 24,
       countryFlag: REAL_STREAM_META[stream.slug]?.countryFlag ?? 'ES',
       countryLabel: REAL_STREAM_META[stream.slug]?.countryLabel ?? 'Espana',
@@ -334,35 +369,7 @@ export class HomePageComponent implements OnInit, OnDestroy {
       isDemo: false,
       targetSlug: stream.slug,
     }));
-
-    const neededDemoCount = Math.max(0, 25 - realCards.length);
-    const demoCards: DisplayStream[] = DEMO_SEEDS.slice(0, neededDemoCount).map((seed, index) => ({
-      id: `demo-${index + 1}`,
-      slug: `demo-card-${index + 1}`,
-      title: seed.title,
-      creatorName: seed.creatorName,
-      description: 'Demo visual para validar densidad del lobby.',
-      tags: seed.tags,
-      isLive: true,
-      currentViewers: seed.currentViewers,
-      playbackHlsUrl: '',
-      accent: palette[(realCards.length + index) % palette.length],
-      age: seed.age,
-      genderIcon: 'pi pi-user',
-      countryFlag: seed.countryFlag,
-      countryLabel: seed.countryLabel,
-      durationLabel: seed.durationLabel,
-      badgeLabel: seed.badgeLabel,
-      badgeTone: seed.badgeTone,
-      following: seed.following ?? false,
-      likes: seed.likes,
-      messageCount: seed.messageCount,
-      isDemo: true,
-      targetSlug: targetFallback,
-    }));
-
-    const cards = [...realCards, ...demoCards];
-    this.displayStreams.set(cards);
-    this.liveCount.set(cards.filter((stream) => stream.isLive).length);
+    this.displayStreams.set(realCards);
+    this.liveCount.set(realCards.filter((stream) => stream.isLive).length);
   }
 }
