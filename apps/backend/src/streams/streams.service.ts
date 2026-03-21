@@ -12,24 +12,7 @@ export class StreamsService {
   private readonly streams = new Map<string, StreamRecord>();
 
   constructor() {
-    const seedStreams: StreamRecord[] = [
-      this.buildStream({
-        slug: 'luna-en-directo',
-        title: 'Luna en directo',
-        creatorName: 'Luna Vega',
-        description: 'Sala demo para validar el flujo OBS -> MediaMTX -> HLS.',
-        tags: ['demo', 'es', 'public'],
-        isLive: false,
-      }),
-      this.buildStream({
-        slug: 'sara-night-show',
-        title: 'Sara Night Show',
-        creatorName: 'Sara Bloom',
-        description: 'Segunda sala publica para probar el listado.',
-        tags: ['night', 'public'],
-        isLive: false,
-      }),
-    ];
+    const seedStreams = this.buildSeedStreams();
 
     seedStreams.forEach((stream) => {
       this.streams.set(stream.slug, stream);
@@ -135,5 +118,46 @@ export class StreamsService {
         obsServer: publishBaseUrl,
       },
     };
+  }
+
+  private buildSeedStreams(): StreamRecord[] {
+    const seeds = [
+      ['luna-en-directo', 'Luna en directo', 'Luna Vega', ['demo', 'es', 'public']],
+      ['sara-night-show', 'Sara Night Show', 'Sara Bloom', ['night', 'public']],
+      ['jade-after-hours', 'Jade After Hours', 'Jade Sol', ['afterhours', 'vip']],
+      ['mia-teal-room', 'Mia Teal Room', 'Mia Costa', ['teal', 'chill']],
+      ['amber-midnight', 'Amber Midnight', 'Amber Rey', ['midnight', 'chat']],
+      ['kiara-live', 'Kiara Live', 'Kiara Lux', ['live', 'fans']],
+      ['sofia-noches', 'Sofia Noches', 'Sofia Mar', ['es', 'sensual']],
+      ['nina-lounge', 'Nina Lounge', 'Nina Star', ['lounge', 'premium']],
+      ['iris-velvet', 'Iris Velvet', 'Iris Blue', ['velvet', 'soft']],
+      ['alma-sin-filtro', 'Alma Sin Filtro', 'Alma Rose', ['raw', 'es']],
+      ['brisa-room', 'Brisa Room', 'Brisa Dawn', ['calm', 'private']],
+      ['coral-live', 'Coral Live', 'Coral Lee', ['coral', 'late']],
+      ['dana-afterdark', 'Dana Afterdark', 'Dana Night', ['afterdark', 'vip']],
+      ['elsa-open-room', 'Elsa Open Room', 'Elsa Moon', ['open', 'public']],
+      ['faye-stream', 'Faye Stream', 'Faye Noir', ['fanclub', 'slow']],
+      ['gina-private-preview', 'Gina Private Preview', 'Gina Vale', ['preview', 'vip']],
+      ['helena-late-club', 'Helena Late Club', 'Helena Fox', ['club', 'night']],
+      ['isabel-directo', 'Isabel Directo', 'Isabel Sky', ['es', 'public']],
+      ['juno-vibes', 'Juno Vibes', 'Juno Hart', ['vibes', 'chat']],
+      ['kara-neon-room', 'Kara Neon Room', 'Kara Mint', ['neon', 'fans']],
+      ['lola-salon', 'Lola Salon', 'Lola Wave', ['salon', 'lounge']],
+      ['maya-aftershow', 'Maya Aftershow', 'Maya Flame', ['aftershow', 'premium']],
+      ['noa-clubhouse', 'Noa Clubhouse', 'Noa Joy', ['clubhouse', 'vip']],
+      ['olivia-live-suite', 'Olivia Live Suite', 'Olivia Dawn', ['suite', 'live']],
+      ['paula-teaser-room', 'Paula Teaser Room', 'Paula Vale', ['teaser', 'fans']],
+    ] as const;
+
+    return seeds.map(([slug, title, creatorName, tags], index) =>
+      this.buildStream({
+        slug,
+        title,
+        creatorName,
+        description: `Sala demo ${index + 1} para validar layout, descubrimiento y navegacion del producto.`,
+        tags: [...tags],
+        isLive: false,
+      }),
+    );
   }
 }
