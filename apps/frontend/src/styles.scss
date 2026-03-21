@@ -105,7 +105,7 @@ button {
   justify-content: center;
   border-radius: 14px;
   border: 1px solid rgba(255, 143, 115, 0.18);
-  background: linear-gradient(145deg, rgba(29, 18, 34, 0.96), rgba(11, 7, 14, 0.92));
+  background: linear-gradient(145deg, rgba(12, 32, 34, 0.96), rgba(4, 18, 20, 0.92));
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   transition: transform 240ms ease;
 }
@@ -141,7 +141,7 @@ button {
 
 .brand-mark-room .brand-module {
   border-radius: 7px;
-  background: linear-gradient(180deg, rgba(255, 143, 115, 0.96), rgba(255, 89, 116, 0.8));
+  background: linear-gradient(180deg, rgba(255, 138, 61, 0.96), rgba(21, 159, 149, 0.8));
 }
 
 .brand-mark-room .brand-module::after {
@@ -711,15 +711,15 @@ button {
   justify-content: center;
   font-weight: 800;
   letter-spacing: 0.08em;
-  background: linear-gradient(135deg, rgba(255, 89, 116, 0.24), rgba(27, 183, 167, 0.16), rgba(15, 10, 22, 0.92));
+  background: linear-gradient(135deg, rgba(255, 138, 61, 0.24), rgba(21, 159, 149, 0.16), rgba(7, 18, 20, 0.94));
 }
 
 .media-card-premium {
-  background: linear-gradient(135deg, rgba(255, 143, 115, 0.24), rgba(255, 89, 116, 0.18), rgba(15, 10, 22, 0.92));
+  background: linear-gradient(135deg, rgba(255, 138, 61, 0.3), rgba(255, 213, 176, 0.16), rgba(7, 18, 20, 0.94));
 }
 
 .media-card-store {
-  background: linear-gradient(135deg, rgba(27, 183, 167, 0.26), rgba(255, 143, 115, 0.16), rgba(15, 10, 22, 0.92));
+  background: linear-gradient(135deg, rgba(21, 159, 149, 0.3), rgba(255, 138, 61, 0.16), rgba(7, 18, 20, 0.94));
 }
 
 .room-summary-head,
@@ -860,8 +860,8 @@ button {
   padding: 7px 12px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04));
-  color: #fff;
+  background: linear-gradient(135deg, rgba(255, 138, 61, 0.94), rgba(255, 174, 92, 0.9));
+  color: #102022;
   font-weight: 600;
   cursor: pointer;
   box-shadow: none;
@@ -875,7 +875,8 @@ button {
 }
 
 .icon-button {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 138, 61, 0.16);
+  color: var(--accent-3);
 }
 
 .chat-locked,

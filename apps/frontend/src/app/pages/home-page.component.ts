@@ -3,19 +3,15 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { ActivatedRoute, Router } from '@angular/router';
 import { StreamSummary } from '@naughtybox/shared-types';
 import { StreamPlayerComponent } from '../stream-player.component';
+import { AuthApiService } from '../services/auth-api.service';
 import { StreamsApiService } from '../services/streams-api.service';
 
 type LobbySection = 'home' | 'discover' | 'tags' | 'private' | 'following';
 
 type StreamMeta = {
-  age: number;
-  genderBadge: string;
-  countryFlag: string;
-  countryLabel: string;
   durationLabel: string;
   badgeLabel?: string;
   badgeTone?: 'new' | 'vip';
-  following?: boolean;
   likes: number;
   messageCount: number;
 };
@@ -23,139 +19,23 @@ type StreamMeta = {
 type DisplayStream = StreamSummary &
   StreamMeta & {
     accent: string;
-    isDemo: boolean;
+    genderBadge: string;
+    countryFlag: string;
+    countryLabel: string;
     targetSlug: string;
   };
 
 const REAL_STREAM_META: Record<string, StreamMeta> = {
-  'luna-en-directo': {
-    age: 24,
-    genderBadge: 'F',
-    countryFlag: 'ES',
-    countryLabel: 'Espana',
-    durationLabel: '12 mins',
-    badgeLabel: 'NEW',
-    badgeTone: 'new',
-    following: true,
-    likes: 91,
-    messageCount: 26,
-  },
-  'jade-after-hours': {
-    age: 27,
-    genderBadge: 'F',
-    countryFlag: 'MX',
-    countryLabel: 'Mexico',
-    durationLabel: '37 mins',
-    badgeLabel: 'VIP',
-    badgeTone: 'vip',
-    following: false,
-    likes: 134,
-    messageCount: 41,
-  },
-  'nora-after-dark': {
-    age: 22,
-    genderBadge: 'F',
-    countryFlag: 'AR',
-    countryLabel: 'Argentina',
-    durationLabel: '8 mins',
-    badgeLabel: 'NEW',
-    badgeTone: 'new',
-    following: false,
-    likes: 74,
-    messageCount: 18,
-  },
-  'lucia-velvet-live': {
-    age: 26,
-    genderBadge: 'F',
-    countryFlag: 'ES',
-    countryLabel: 'Espana',
-    durationLabel: '15 mins',
-    badgeLabel: 'VIP',
-    badgeTone: 'vip',
-    following: true,
-    likes: 156,
-    messageCount: 47,
-  },
-  'maya-costa-live': {
-    age: 23,
-    genderBadge: 'F',
-    countryFlag: 'ES',
-    countryLabel: 'Espana',
-    durationLabel: '18 mins',
-    badgeLabel: 'NEW',
-    badgeTone: 'new',
-    likes: 108,
-    messageCount: 29,
-  },
-  'kiara-rio-live': {
-    age: 25,
-    genderBadge: 'F',
-    countryFlag: 'CO',
-    countryLabel: 'Colombia',
-    durationLabel: '27 mins',
-    likes: 123,
-    messageCount: 35,
-  },
-  'sofia-velvet-room': {
-    age: 28,
-    genderBadge: 'F',
-    countryFlag: 'AR',
-    countryLabel: 'Argentina',
-    durationLabel: '31 mins',
-    badgeLabel: 'VIP',
-    badgeTone: 'vip',
-    likes: 141,
-    messageCount: 41,
-  },
-  'alex-nero-live': {
-    age: 29,
-    genderBadge: 'M',
-    countryFlag: 'ES',
-    countryLabel: 'Espana',
-    durationLabel: '22 mins',
-    likes: 92,
-    messageCount: 21,
-  },
-  'marco-blaze-room': {
-    age: 27,
-    genderBadge: 'M',
-    countryFlag: 'IT',
-    countryLabel: 'Italia',
-    durationLabel: '14 mins',
-    badgeLabel: 'NEW',
-    badgeTone: 'new',
-    likes: 76,
-    messageCount: 18,
-  },
-  'diego-wave-live': {
-    age: 30,
-    genderBadge: 'M',
-    countryFlag: 'MX',
-    countryLabel: 'Mexico',
-    durationLabel: '39 mins',
-    likes: 119,
-    messageCount: 32,
-  },
-  'alma-noah-duo': {
-    age: 26,
-    genderBadge: 'MF',
-    countryFlag: 'ES',
-    countryLabel: 'Espana',
-    durationLabel: '41 mins',
-    badgeLabel: 'VIP',
-    badgeTone: 'vip',
-    likes: 166,
-    messageCount: 44,
-  },
-  'leo-iris-duo': {
-    age: 24,
-    genderBadge: 'MM',
-    countryFlag: 'PT',
-    countryLabel: 'Portugal',
-    durationLabel: '16 mins',
-    likes: 88,
-    messageCount: 22,
-  },
+  'luna-en-directo': { durationLabel: '12 mins', badgeLabel: 'NEW', badgeTone: 'new', likes: 91, messageCount: 26 },
+  'jade-after-hours': { durationLabel: '37 mins', badgeLabel: 'VIP', badgeTone: 'vip', likes: 134, messageCount: 41 },
+  'lucia-velvet-live': { durationLabel: '15 mins', badgeLabel: 'VIP', badgeTone: 'vip', likes: 156, messageCount: 47 },
+  'maya-costa-live': { durationLabel: '18 mins', badgeLabel: 'NEW', badgeTone: 'new', likes: 108, messageCount: 29 },
+  'sofia-velvet-room': { durationLabel: '31 mins', badgeLabel: 'VIP', badgeTone: 'vip', likes: 141, messageCount: 41 },
+  'alex-nero-live': { durationLabel: '22 mins', likes: 92, messageCount: 21 },
+  'marco-blaze-room': { durationLabel: '14 mins', badgeLabel: 'NEW', badgeTone: 'new', likes: 76, messageCount: 18 },
+  'diego-wave-live': { durationLabel: '39 mins', likes: 119, messageCount: 32 },
+  'alma-noah-duo': { durationLabel: '41 mins', badgeLabel: 'VIP', badgeTone: 'vip', likes: 166, messageCount: 44 },
+  'leo-iris-duo': { durationLabel: '16 mins', likes: 88, messageCount: 22 },
 };
 
 @Component({
@@ -168,7 +48,7 @@ const REAL_STREAM_META: Record<string, StreamMeta> = {
         <div>
           <p class="eyebrow">Streaming Lobby</p>
           <h1 class="lobby-title">Lobby en directo.</h1>
-          <p class="muted lobby-subtitle">Cards densas, metricas claras y acceso directo a la sala del creador.</p>
+          <p class="muted lobby-subtitle">Discovery real por perfiles, follows y acceso premium.</p>
         </div>
 
         <div class="lobby-stats">
@@ -187,28 +67,23 @@ const REAL_STREAM_META: Record<string, StreamMeta> = {
       <section *ngIf="error()" class="page-state">{{ error() }}</section>
 
       <section *ngIf="!loading() && !error() && filteredStreams().length > 0" class="catalog-grid">
-        <button
-          type="button"
-          class="catalog-card panel-card"
-          *ngFor="let stream of filteredStreams()"
-          (click)="enterRoom(stream)"
-        >
+        <button type="button" class="catalog-card panel-card" *ngFor="let stream of filteredStreams()" (click)="enterRoom(stream)">
           <div class="catalog-thumb">
             <app-stream-player
-              *ngIf="stream.isLive && !stream.isDemo"
+              *ngIf="stream.isLive"
               [src]="stream.playbackHlsUrl"
               [controls]="false"
               [muted]="true"
             />
 
-            <div *ngIf="!stream.isLive || stream.isDemo" class="catalog-preview" [style.background]="stream.accent">
+            <div *ngIf="!stream.isLive" class="catalog-preview" [style.background]="stream.accent">
               <div class="catalog-monogram">{{ monogram(stream.creatorName) }}</div>
             </div>
 
             <div class="catalog-overlay">
               <div class="catalog-topline">
                 <button type="button" class="follow-badge" (click)="toggleFollow(stream, $event)">
-                  <span class="symbol-heart">{{ stream.following ? '♥' : '♡' }}</span>
+                  <span class="symbol-heart">{{ stream.following ? 'ON' : 'FAV' }}</span>
                 </button>
                 <span *ngIf="stream.badgeLabel" [class]="'status-tag status-tag-' + (stream.badgeTone ?? 'new')">
                   {{ stream.badgeLabel }}
@@ -219,12 +94,14 @@ const REAL_STREAM_META: Record<string, StreamMeta> = {
                 <div class="catalog-copy">
                   <div class="catalog-identity">
                     <strong>{{ stream.creatorName }}</strong>
-                    <span class="catalog-age">{{ stream.age }}</span>
+                    <span class="catalog-age">{{ stream.age ?? 24 }}</span>
                     <span class="catalog-gender">{{ stream.genderBadge }}</span>
                     <span class="catalog-flag">{{ stream.countryFlag }}</span>
                   </div>
                   <div class="catalog-meta-row">
-                    <span><span class="meta-symbol">◉</span> {{ stream.countryLabel }}</span>
+                    <span><span class="meta-symbol">LOC</span> {{ stream.countryLabel }}</span>
+                    <span *ngIf="stream.accessMode === 'premium'"><span class="meta-symbol">VIP</span> premium</span>
+                    <span *ngIf="stream.accessMode === 'private'"><span class="meta-symbol">PVT</span> tokens</span>
                   </div>
                   <span class="catalog-description">{{ stream.title }}</span>
                   <div class="catalog-meta-row">
@@ -235,11 +112,11 @@ const REAL_STREAM_META: Record<string, StreamMeta> = {
 
                 <div class="catalog-metrics">
                   <span class="metric-chip">
-                    <span class="meta-symbol">♥</span>
+                    <span class="meta-symbol">LIK</span>
                     {{ stream.likes }}
                   </span>
                   <span class="metric-chip">
-                    <span class="meta-symbol">💬</span>
+                    <span class="meta-symbol">MSG</span>
                     {{ stream.messageCount }}
                   </span>
                 </div>
@@ -253,6 +130,7 @@ const REAL_STREAM_META: Record<string, StreamMeta> = {
 })
 export class HomePageComponent implements OnInit, OnDestroy {
   private readonly streamsApi = inject(StreamsApiService);
+  private readonly authApi = inject(AuthApiService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private refreshTimer?: ReturnType<typeof setInterval>;
@@ -298,13 +176,24 @@ export class HomePageComponent implements OnInit, OnDestroy {
     await this.router.navigateByUrl(`/streams/${stream.targetSlug}`);
   }
 
-  toggleFollow(stream: DisplayStream, event: Event) {
+  async toggleFollow(stream: DisplayStream, event: Event) {
     event.stopPropagation();
-    this.displayStreams.update((current) =>
-      current.map((candidate) =>
-        candidate.id === stream.id ? { ...candidate, following: !candidate.following } : candidate,
-      ),
-    );
+
+    if (!this.authApi.isAuthenticated()) {
+      await this.router.navigateByUrl('/login');
+      return;
+    }
+
+    try {
+      const result = await this.streamsApi.toggleFollow(stream.slug);
+      this.displayStreams.update((current) =>
+        current.map((candidate) =>
+          candidate.slug === result.slug ? { ...candidate, following: result.following } : candidate,
+        ),
+      );
+    } catch (error) {
+      this.error.set(error instanceof Error ? error.message : 'No se pudo actualizar el follow.');
+    }
   }
 
   private async loadStreams(showLoader = true) {
@@ -330,13 +219,11 @@ export class HomePageComponent implements OnInit, OnDestroy {
       case 'discover':
         return [...streams].sort((a, b) => (b.currentViewers || 0) - (a.currentViewers || 0));
       case 'tags':
-        return streams.filter((stream) => stream.tags.length > 0 || stream.badgeLabel);
-      case 'private':
-        return streams.filter((stream) =>
-          [...stream.tags, ...(stream.badgeLabel ? [stream.badgeLabel.toLowerCase()] : [])].some((tag) =>
-            ['vip', 'private', 'private-shows', 'tokens'].includes(tag.toLowerCase()),
-          ),
+        return streams.filter(
+          (stream) => (stream.categories?.length ?? 0) > 0 || (stream.subcategories?.length ?? 0) > 0 || stream.tags.length > 0,
         );
+      case 'private':
+        return streams.filter((stream) => stream.accessMode === 'private' || stream.accessMode === 'premium');
       case 'following':
         return streams.filter((stream) => stream.following);
       default:
@@ -356,20 +243,44 @@ export class HomePageComponent implements OnInit, OnDestroy {
       ...stream,
       ...REAL_STREAM_META[stream.slug],
       accent: palette[index % palette.length],
-      genderBadge: REAL_STREAM_META[stream.slug]?.genderBadge ?? 'F',
-      age: REAL_STREAM_META[stream.slug]?.age ?? 24,
-      countryFlag: REAL_STREAM_META[stream.slug]?.countryFlag ?? 'ES',
-      countryLabel: REAL_STREAM_META[stream.slug]?.countryLabel ?? 'Espana',
+      genderBadge: this.genderToBadge(stream.gender),
+      countryFlag: this.countryToFlag(stream.country),
+      countryLabel: stream.country ?? 'Espana',
       durationLabel: REAL_STREAM_META[stream.slug]?.durationLabel ?? '10 mins',
-      badgeLabel: REAL_STREAM_META[stream.slug]?.badgeLabel,
-      badgeTone: REAL_STREAM_META[stream.slug]?.badgeTone,
-      following: REAL_STREAM_META[stream.slug]?.following ?? false,
+      badgeLabel: REAL_STREAM_META[stream.slug]?.badgeLabel ?? this.accessToBadge(stream.accessMode),
+      badgeTone: REAL_STREAM_META[stream.slug]?.badgeTone ?? (stream.accessMode === 'premium' || stream.accessMode === 'private' ? 'vip' : 'new'),
       likes: REAL_STREAM_META[stream.slug]?.likes ?? 80 + index * 17,
       messageCount: REAL_STREAM_META[stream.slug]?.messageCount ?? 20 + index * 6,
-      isDemo: false,
       targetSlug: stream.slug,
     }));
+
     this.displayStreams.set(realCards);
     this.liveCount.set(realCards.filter((stream) => stream.isLive).length);
+  }
+
+  private genderToBadge(gender?: string) {
+    const value = (gender ?? '').toLowerCase();
+    if (value.includes('couple-mf')) return 'MF';
+    if (value.includes('couple-mm')) return 'MM';
+    if (value.includes('couple-ff')) return 'FF';
+    if (value.includes('man')) return 'M';
+    return 'F';
+  }
+
+  private countryToFlag(country?: string) {
+    const value = (country ?? '').toLowerCase();
+    if (value.includes('spain')) return 'ES';
+    if (value.includes('mexico')) return 'MX';
+    if (value.includes('argentina')) return 'AR';
+    if (value.includes('colombia')) return 'CO';
+    if (value.includes('italy')) return 'IT';
+    if (value.includes('portugal')) return 'PT';
+    return 'ES';
+  }
+
+  private accessToBadge(accessMode?: string) {
+    if (accessMode === 'premium') return 'VIP';
+    if (accessMode === 'private') return 'PVT';
+    return 'NEW';
   }
 }

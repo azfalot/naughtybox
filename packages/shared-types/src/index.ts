@@ -90,6 +90,8 @@ export interface CreatorRoom {
   updatedAt: string;
 }
 
+export type StreamAccessMode = 'public' | 'premium' | 'private';
+
 export interface StreamSummary {
   id: string;
   slug: string;
@@ -101,6 +103,14 @@ export interface StreamSummary {
   currentViewers?: number;
   thumbnailUrl?: string;
   playbackHlsUrl: string;
+  age?: number;
+  gender?: string;
+  country?: string;
+  city?: string;
+  categories?: string[];
+  subcategories?: string[];
+  accessMode?: StreamAccessMode;
+  following?: boolean;
 }
 
 export interface StreamPlayback {
@@ -118,6 +128,20 @@ export interface StreamDetails extends Omit<StreamSummary, 'playbackHlsUrl'> {
   playback: StreamPlayback;
   publish: StreamPublish;
   creatorProfile?: CreatorPublicProfile;
+}
+
+export interface FollowedCreator {
+  slug: string;
+  displayName: string;
+  roomSlug: string;
+  categories: string[];
+  accessMode: StreamAccessMode;
+  followedAt: string;
+}
+
+export interface FollowToggleResponse {
+  slug: string;
+  following: boolean;
 }
 
 export interface CreatorDashboard {

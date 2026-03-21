@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatorPublicProfile, StreamDetails, StreamSummary } from '@naughtybox/shared-types';
 import { DatabaseService } from '../database/database.service';
+import { FollowsService } from '../follows/follows.service';
 
 type StreamRow = {
   room_id: string;
@@ -32,15 +33,19 @@ type StreamRow = {
 
 @Injectable()
 export class StreamsService {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly followsService: FollowsService,
+  ) {}
 
-  async listStreams(): Promise<StreamSummary[]> {
+  async listStreams(viewerId: string | null = null): Promise<StreamSummary[]> {
     const rows = await this.getPublicRoomRows();
     const liveStatus = await this.fetchLiveStatus(rows.map((row) => row.room_slug));
-    return rows.map((row) => this.toSummary(row, liveStatus.get(row.room_slug) ?? false));
+    const followMap = await this.followsService.getFollowMap(viewerId, rows.map((row) => row.room_slug));
+    return rows.map((row) => this.toSummary(row, liveStatus.get(row.room_slug) ?? false, followMap.get(row.room_slug) ?? false));
   }
 
-  async getStream(slug: string): Promise<StreamDetails> {
+  async getStream(slug: string, viewerId: string | null = null): Promise<StreamDetails> {
     const result = await this.database.query<StreamRow>(
       `
       SELECT
@@ -83,7 +88,8 @@ export class StreamsService {
     }
 
     const isLive = (await this.fetchLiveStatus([row.room_slug])).get(row.room_slug) ?? false;
-    return this.toDetails(row, isLive);
+    const followMap = await this.followsService.getFollowMap(viewerId, [row.room_slug]);
+    return this.toDetails(row, isLive, followMap.get(row.room_slug) ?? false);
   }
 
   async getBillingConfig() {
@@ -168,8 +174,9 @@ export class StreamsService {
     return new Map(entries);
   }
 
-  private toSummary(row: StreamRow, isLive: boolean): StreamSummary {
+  private toSummary(row: StreamRow, isLive: boolean, following = false): StreamSummary {
     const mediaBaseUrl = process.env.MEDIA_BASE_URL ?? 'http://localhost:4200/media';
+    const accessMode = this.resolveAccessMode(row.room_tags ?? [], row.categories ?? []);
     return {
       id: row.room_id,
       slug: row.room_slug,
@@ -181,16 +188,24 @@ export class StreamsService {
       currentViewers: 0,
       thumbnailUrl: row.avatar_url ?? undefined,
       playbackHlsUrl: `${mediaBaseUrl}/live/${row.room_slug}/index.m3u8`,
+      age: row.age ?? undefined,
+      gender: row.gender ?? undefined,
+      country: row.country ?? undefined,
+      city: row.city ?? undefined,
+      categories: row.categories ?? [],
+      subcategories: row.subcategories ?? [],
+      accessMode,
+      following,
     };
   }
 
-  private toDetails(row: StreamRow, isLive: boolean): StreamDetails {
+  private toDetails(row: StreamRow, isLive: boolean, following = false): StreamDetails {
     const publicApiBaseUrl = process.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
     const mediaBaseUrl = process.env.MEDIA_BASE_URL ?? 'http://localhost:4200/media';
     const publishBaseUrl = process.env.RTMP_PUBLISH_URL ?? 'rtmp://localhost:1935/live';
 
     return {
-      ...this.toSummary(row, isLive),
+      ...this.toSummary(row, isLive, following),
       playback: {
         hlsUrl: `${mediaBaseUrl}/live/${row.room_slug}/index.m3u8`,
         shareUrl: `${publicApiBaseUrl}/streams/${row.room_slug}`,
@@ -202,6 +217,17 @@ export class StreamsService {
       },
       creatorProfile: this.toPublicProfile(row),
     };
+  }
+
+  private resolveAccessMode(roomTags: string[], categories: string[]) {
+    const values = [...roomTags, ...categories].map((value) => value.toLowerCase());
+    if (values.some((value) => ['private', 'private-shows', 'tokens'].includes(value))) {
+      return 'private' as const;
+    }
+    if (values.some((value) => ['premium', 'vip'].includes(value))) {
+      return 'premium' as const;
+    }
+    return 'public' as const;
   }
 
   private toPublicProfile(row: StreamRow): CreatorPublicProfile {

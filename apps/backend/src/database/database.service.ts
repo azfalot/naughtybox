@@ -105,6 +105,13 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
 
+      CREATE TABLE IF NOT EXISTS user_follows (
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        creator_profile_id TEXT NOT NULL REFERENCES creator_profiles(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (user_id, creator_profile_id)
+      );
+
       CREATE TABLE IF NOT EXISTS payment_provider_configs (
         id TEXT PRIMARY KEY,
         provider_key TEXT NOT NULL UNIQUE,
@@ -395,7 +402,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       localCreators.map((creator) => creator.username),
     );
 
-    await this.ensureDemoViewer();
+    const demoViewerId = await this.ensureDemoViewer();
 
     for (const creator of localCreators) {
       const userId = await this.ensureUser({
@@ -408,6 +415,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       await this.ensureCreatorRoom(profileId, creator);
       await this.ensureWallet(userId);
     }
+
+    await this.ensureFollowSeeds(demoViewerId, ['lucia-velvet-live', 'luna-en-directo', 'alma-noah-duo']);
 
     const providers = [
       ['ccbill', 'researching', 'Adult-friendly processor candidate for cards.'],
@@ -436,6 +445,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       role: 'viewer',
     });
     await this.ensureWallet(viewerId, 250);
+    return viewerId;
   }
 
   private async ensureUser(input: { email: string; username: string; password: string; role: 'viewer' | 'creator' }) {
@@ -567,6 +577,22 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         `INSERT INTO token_transactions (id, user_id, room_slug, type, amount, balance_after, description)
          VALUES ($1, $2, NULL, 'credit', $3, $3, 'Initial wallet seed')`,
         [randomUUID(), userId, balance],
+      );
+    }
+  }
+
+  private async ensureFollowSeeds(userId: string, roomSlugs: string[]) {
+    const result = await this.query<{ creator_profile_id: string }>(
+      `SELECT creator_profile_id FROM creator_rooms WHERE slug = ANY($1::text[])`,
+      [roomSlugs],
+    );
+
+    for (const row of result.rows) {
+      await this.query(
+        `INSERT INTO user_follows (user_id, creator_profile_id)
+         VALUES ($1, $2)
+         ON CONFLICT (user_id, creator_profile_id) DO NOTHING`,
+        [userId, row.creator_profile_id],
       );
     }
   }

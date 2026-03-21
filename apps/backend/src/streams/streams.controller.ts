@@ -1,13 +1,17 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Headers, Param } from '@nestjs/common';
+import { AuthService } from '../auth/auth.service';
 import { StreamsService } from './streams.service';
 
 @Controller('streams')
 export class StreamsController {
-  constructor(private readonly streamsService: StreamsService) {}
+  constructor(
+    private readonly streamsService: StreamsService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Get()
-  listStreams() {
-    return this.streamsService.listStreams();
+  async listStreams(@Headers('authorization') authorization?: string) {
+    return this.streamsService.listStreams(await this.resolveViewerId(authorization));
   }
 
   @Get('meta/billing')
@@ -16,7 +20,20 @@ export class StreamsController {
   }
 
   @Get(':slug')
-  getStream(@Param('slug') slug: string) {
-    return this.streamsService.getStream(slug);
+  async getStream(@Param('slug') slug: string, @Headers('authorization') authorization?: string) {
+    return this.streamsService.getStream(slug, await this.resolveViewerId(authorization));
+  }
+
+  private async resolveViewerId(authorization?: string) {
+    if (!authorization?.startsWith('Bearer ')) {
+      return null;
+    }
+
+    try {
+      const user = await this.authService.verifyToken(authorization.slice(7));
+      return user.id;
+    } catch {
+      return null;
+    }
   }
 }
