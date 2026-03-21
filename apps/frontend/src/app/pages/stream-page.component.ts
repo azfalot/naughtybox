@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { StreamDetails } from '@naughtybox/shared-types';
+import { ChatMessage, StreamDetails, WalletSummary } from '@naughtybox/shared-types';
 import { StreamPlayerComponent } from '../stream-player.component';
 import { AuthApiService } from '../services/auth-api.service';
+import { ChatApiService } from '../services/chat-api.service';
 import { StreamsApiService } from '../services/streams-api.service';
+import { WalletApiService } from '../services/wallet-api.service';
 
 type VirtualCreatorProfile = {
   avatar: string;
@@ -61,7 +63,7 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
               </div>
               <div>
                 <p class="muted stat-label">Chat</p>
-                <strong>{{ authApi.isAuthenticated() ? 'registrados' : 'login requerido' }}</strong>
+                <strong>{{ authApi.isAuthenticated() ? 'realtime' : 'login requerido' }}</strong>
               </div>
             </div>
           </div>
@@ -86,12 +88,12 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
           <section class="panel-card chat-panel">
             <div class="chat-header">
               <h2 class="mini-title" style="margin: 0;">Chat en vivo</h2>
-              <span class="muted">{{ authApi.isAuthenticated() ? 'registrados' : 'privado' }}</span>
+              <span class="muted">{{ authApi.isAuthenticated() ? 'realtime' : 'privado' }}</span>
             </div>
 
             <div class="chat-messages">
-              <article class="chat-message" *ngFor="let message of messages">
-                <strong>{{ message.author }}</strong>
+              <article class="chat-message" *ngFor="let message of messages()">
+                <strong>{{ message.authorName }}</strong>
                 <p>{{ message.body }}</p>
               </article>
             </div>
@@ -107,10 +109,29 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
 
             <ng-template #loginForChat>
               <div class="chat-locked">
-                <p class="muted">El chat queda reservado a usuarios registrados para moderacion, seguridad y futura capa de pagos/tokens.</p>
+                <p class="muted">El chat queda reservado a usuarios registrados para moderacion, seguridad y capa premium.</p>
                 <a class="text-link" routerLink="/login">Entrar para chatear</a>
               </div>
             </ng-template>
+          </section>
+
+          <section class="panel-card" *ngIf="authApi.isAuthenticated()">
+            <div class="chat-header">
+              <h2 class="mini-title" style="margin: 0;">Wallet</h2>
+              <span class="viewer-pill">{{ wallet()?.balance ?? 0 }} tokens</span>
+            </div>
+
+            <div class="studio-actions" style="margin-top: 12px;">
+              <button type="button" class="text-link" (click)="addDevCredit()">Recarga dev +250</button>
+              <button type="button" class="text-link" (click)="tip(25)">Tip 25</button>
+              <button type="button" class="text-link" (click)="tip(100)">Tip 100</button>
+            </div>
+
+            <ul class="helper-list" style="margin-top: 14px;" *ngIf="wallet()?.recentTransactions?.length">
+              <li *ngFor="let transaction of wallet()!.recentTransactions.slice(0, 5)">
+                {{ transaction.type }} · {{ transaction.amount }} · {{ transaction.balanceAfter }}
+              </li>
+            </ul>
           </section>
 
           <section class="panel-card">
@@ -132,6 +153,8 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
               <li>Validar reproduccion desde otra pestaña o dispositivo.</li>
             </ul>
           </section>
+
+          <p *ngIf="notice()" class="studio-notice">{{ notice() }}</p>
         </aside>
       </section>
     </main>
@@ -141,17 +164,17 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly streamsApi = inject(StreamsApiService);
   readonly authApi = inject(AuthApiService);
+  private readonly walletApi = inject(WalletApiService);
+  private readonly chatApi = inject(ChatApiService);
   private refreshTimer?: ReturnType<typeof setInterval>;
 
   readonly stream = signal<StreamDetails | null>(null);
   readonly loading = signal(true);
   readonly error = signal('');
+  readonly notice = signal('');
   readonly creatorProfile = signal<VirtualCreatorProfile>(DEFAULT_PROFILE);
-  readonly messages = [
-    { author: 'Naughtybox', body: 'Chat demo listo para la siguiente fase.' },
-    { author: 'Lucas', body: 'La sala ya se siente mucho mas a producto.' },
-    { author: 'Ana', body: 'Falta integrar cuentas reales y moderacion.' },
-  ];
+  readonly messages = signal<ChatMessage[]>([]);
+  readonly wallet = signal<WalletSummary | null>(null);
 
   async ngOnInit() {
     const slug = this.route.snapshot.paramMap.get('slug');
@@ -164,6 +187,11 @@ export class StreamPageComponent implements OnInit, OnDestroy {
 
     try {
       await this.loadStream(slug);
+      await this.loadChat(slug);
+      if (this.authApi.isAuthenticated()) {
+        await this.loadWallet();
+        this.connectChat(slug);
+      }
       this.refreshTimer = setInterval(() => {
         void this.loadStream(slug, false);
       }, 8000);
@@ -175,25 +203,45 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.chatApi.disconnect();
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
     }
   }
 
-  sendMessage(event: Event) {
+  async sendMessage(event: Event) {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
     const input = form.elements.namedItem('message') as HTMLInputElement | null;
 
-    if (!input || !input.value.trim()) {
+    if (!input || !input.value.trim() || !this.stream()) {
       return;
     }
 
-    this.messages.unshift({
-      author: this.authApi.user()?.username ?? 'Tu',
-      body: input.value.trim(),
-    });
+    this.chatApi.sendMessage(this.stream()!.slug, input.value.trim());
     input.value = '';
+  }
+
+  async addDevCredit() {
+    try {
+      this.wallet.set(await this.walletApi.addDevCredit());
+      this.notice.set('Saldo de prueba recargado.');
+    } catch (error) {
+      this.notice.set(error instanceof Error ? error.message : 'No se pudo recargar.');
+    }
+  }
+
+  async tip(amount: number) {
+    if (!this.stream()) {
+      return;
+    }
+
+    try {
+      this.wallet.set(await this.walletApi.tipCreator(this.stream()!.slug, amount));
+      this.notice.set(`Propina enviada: ${amount} tokens.`);
+    } catch (error) {
+      this.notice.set(error instanceof Error ? error.message : 'No se pudo enviar la propina.');
+    }
   }
 
   private async loadStream(slug: string, showLoader = true) {
@@ -209,5 +257,22 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     if (showLoader) {
       this.loading.set(false);
     }
+  }
+
+  private async loadChat(slug: string) {
+    this.messages.set(await this.chatApi.getHistory(slug));
+  }
+
+  private async loadWallet() {
+    this.wallet.set(await this.walletApi.getWallet());
+  }
+
+  private connectChat(slug: string) {
+    this.chatApi.connect(slug, {
+      onHistory: (messages) => this.messages.set(messages),
+      onMessage: (message) => {
+        this.messages.update((current) => [...current, message].slice(-40));
+      },
+    });
   }
 }

@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { BillingConfig, CreatorDashboard } from '@naughtybox/shared-types';
+import { BillingConfig, CreatorDashboard, WalletSummary } from '@naughtybox/shared-types';
 import { AuthApiService } from '../services/auth-api.service';
 import { CreatorApiService } from '../services/creator-api.service';
+import { WalletApiService } from '../services/wallet-api.service';
 
 @Component({
   selector: 'app-creator-studio-page',
@@ -109,7 +110,7 @@ import { CreatorApiService } from '../services/creator-api.service';
           <section class="panel-card" *ngIf="billing() as billing">
             <h2 class="mini-title">Tokens y pagos</h2>
             <p class="muted">
-              Dejamos la base lista para tokens y billing, pero la integracion con proveedor adulto-friendly se decide en la siguiente fase.
+              La base ya soporta wallet, ledger y propinas. La pasarela adulto-friendly sigue separada para decidirla bien en la siguiente fase.
             </p>
             <div class="creator-grid">
               <div>
@@ -132,6 +133,21 @@ import { CreatorApiService } from '../services/creator-api.service';
             </ul>
           </section>
 
+          <section class="panel-card" *ngIf="wallet() as wallet">
+            <div class="chat-header">
+              <h2 class="mini-title" style="margin: 0;">Wallet</h2>
+              <span class="viewer-pill">{{ wallet.balance }} tokens</span>
+            </div>
+            <div class="studio-actions" style="margin-top: 12px;">
+              <button type="button" class="text-link" (click)="addDevCredit()">Recarga dev +250</button>
+            </div>
+            <ul class="helper-list" style="margin-top: 14px;">
+              <li *ngFor="let transaction of wallet.recentTransactions.slice(0, 6)">
+                {{ transaction.type }} · {{ transaction.amount }} · {{ transaction.balanceAfter }}
+              </li>
+            </ul>
+          </section>
+
           <p *ngIf="notice()" class="studio-notice">{{ notice() }}</p>
           <p *ngIf="error()" class="form-error">{{ error() }}</p>
         </aside>
@@ -142,9 +158,11 @@ import { CreatorApiService } from '../services/creator-api.service';
 export class CreatorStudioPageComponent implements OnInit {
   readonly authApi = inject(AuthApiService);
   private readonly creatorApi = inject(CreatorApiService);
+  private readonly walletApi = inject(WalletApiService);
 
   readonly dashboard = signal<CreatorDashboard | null>(null);
   readonly billing = signal<BillingConfig | null>(null);
+  readonly wallet = signal<WalletSummary | null>(null);
   readonly error = signal('');
   readonly notice = signal('');
   readonly isCreator = computed(() => this.dashboard()?.user.role === 'creator');
@@ -156,7 +174,7 @@ export class CreatorStudioPageComponent implements OnInit {
 
     try {
       await this.authApi.me();
-      await Promise.all([this.loadDashboard(), this.loadBilling()]);
+      await Promise.all([this.loadDashboard(), this.loadBilling(), this.loadWallet()]);
       this.error.set('');
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'No se pudo cargar el studio.');
@@ -202,12 +220,26 @@ export class CreatorStudioPageComponent implements OnInit {
     }
   }
 
+  async addDevCredit() {
+    try {
+      this.wallet.set(await this.walletApi.addDevCredit());
+      this.notice.set('Wallet recargada con saldo de desarrollo.');
+      this.error.set('');
+    } catch (error) {
+      this.error.set(error instanceof Error ? error.message : 'No se pudo recargar la wallet.');
+    }
+  }
+
   private async loadDashboard() {
     this.dashboard.set(await this.creatorApi.getDashboard());
   }
 
   private async loadBilling() {
     this.billing.set(await this.creatorApi.getBillingConfig());
+  }
+
+  private async loadWallet() {
+    this.wallet.set(await this.walletApi.getWallet());
   }
 
   private splitTags(value: string) {

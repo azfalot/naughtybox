@@ -71,6 +71,26 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
 
+      CREATE TABLE IF NOT EXISTS token_transactions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        room_slug TEXT,
+        type TEXT NOT NULL,
+        amount INTEGER NOT NULL,
+        balance_after INTEGER NOT NULL,
+        description TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS room_chat_messages (
+        id TEXT PRIMARY KEY,
+        room_slug TEXT NOT NULL,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        author_name TEXT NOT NULL,
+        body TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
       CREATE TABLE IF NOT EXISTS payment_provider_configs (
         id TEXT PRIMARY KEY,
         provider_key TEXT NOT NULL UNIQUE,
@@ -159,6 +179,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       await this.query(
         `INSERT INTO token_wallets (id, user_id, balance)
          VALUES ($1, $2, 0)`,
+        [randomUUID(), userId],
+      );
+
+      await this.query(
+        `INSERT INTO token_transactions (id, user_id, room_slug, type, amount, balance_after, description)
+         VALUES ($1, $2, NULL, 'credit', 0, 0, 'Initial wallet seed')`,
         [randomUUID(), userId],
       );
     }

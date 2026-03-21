@@ -120,3 +120,39 @@ export interface BillingConfig {
   payoutHoldDays: number;
   providers: PaymentProviderOption[];
 }
+
+export interface ChatMessage {
+  id: string;
+  roomSlug: string;
+  userId: string;
+  authorName: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface SendChatMessageRequest {
+  roomSlug: string;
+  body: string;
+}
+
+export interface TokenTransaction {
+  id: string;
+  userId: string;
+  roomSlug?: string;
+  type: 'credit' | 'debit' | 'tip_sent' | 'tip_received';
+  amount: number;
+  balanceAfter: number;
+  description: string;
+  createdAt: string;
+}
+
+export interface WalletSummary {
+  balance: number;
+  recentTransactions: TokenTransaction[];
+}
+
+export interface TipCreatorRequest {
+  roomSlug: string;
+  amount: number;
+  note?: string;
+}
