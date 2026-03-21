@@ -234,11 +234,16 @@ input {
   grid-template-columns: repeat(auto-fit, minmax(176px, 1fr));
 }
 
+.stream-grid-compact {
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+}
+
 .stream-card {
   display: block;
   padding: 0;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 14px;
 }
 
 .stream-card-link {
@@ -246,7 +251,7 @@ input {
 }
 
 .stream-card-link:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   border-color: rgba(255, 147, 109, 0.25);
   background: rgba(33, 16, 28, 0.98);
 }
@@ -345,7 +350,7 @@ input {
 }
 
 .stream-meta h3 {
-  font-size: 0.94rem;
+  font-size: 0.86rem;
   line-height: 1.1;
 }
 
@@ -357,7 +362,7 @@ input {
 
 .stream-meta p {
   margin: 4px 0 0;
-  font-size: 0.76rem;
+  font-size: 0.7rem;
 }
 
 .stream-meta-overlay h3,
@@ -377,8 +382,8 @@ input {
 }
 
 .stream-metrics-overlay {
-  grid-template-columns: repeat(3, minmax(0, max-content));
-  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: 5px;
 }
 
 .metric-chip {
@@ -386,12 +391,12 @@ input {
   align-items: center;
   gap: 5px;
   min-width: 0;
-  padding: 6px 8px;
+  padding: 5px 7px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--line);
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.64rem;
 }
 
 .stream-metrics-overlay .metric-chip {
@@ -450,7 +455,7 @@ input {
 
 .mock-preview-copy span {
   color: rgba(248, 244, 251, 0.78);
-  font-size: 0.79rem;
+  font-size: 0.7rem;
 }
 
 .stream-layout {
