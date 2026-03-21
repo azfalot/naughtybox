@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthApiService } from './services/auth-api.service';
 
@@ -26,14 +26,29 @@ import { AuthApiService } from './services/auth-api.service';
           </span>
         </a>
 
-        <nav class="topnav">
-          <a routerLink="/">Salas</a>
-          <a routerLink="/studio">Studio</a>
-          <a *ngIf="!authApi.isAuthenticated()" routerLink="/login">Entrar</a>
-          <a *ngIf="!authApi.isAuthenticated()" routerLink="/register">Registro</a>
-          <a *ngIf="authApi.isAuthenticated()" href="#" (click)="logout($event)">Salir</a>
-        </nav>
+        <div class="topbar-actions">
+          <div *ngIf="authApi.isAuthenticated() && authApi.user()" class="account-pill">
+            <span class="account-name">{{ authApi.user()!.username }}</span>
+            <span class="account-role">{{ accountLabel() }}</span>
+          </div>
+
+          <nav class="topnav">
+            <a routerLink="/">Salas</a>
+            <a routerLink="/studio">Studio</a>
+            <a *ngIf="!authApi.isAuthenticated()" routerLink="/login">Entrar</a>
+            <a *ngIf="!authApi.isAuthenticated()" routerLink="/register">Registro</a>
+            <a *ngIf="authApi.isAuthenticated()" href="#" (click)="logout($event)">Salir</a>
+          </nav>
+        </div>
       </header>
+
+      <nav class="section-tabs">
+        <a class="section-tab active" routerLink="/">Home</a>
+        <a class="section-tab" routerLink="/">Discover</a>
+        <a class="section-tab" routerLink="/">Tags</a>
+        <a class="section-tab" routerLink="/">Private Shows</a>
+        <a class="section-tab" routerLink="/">Following</a>
+      </nav>
 
       <router-outlet />
 
@@ -63,6 +78,16 @@ export class AppComponent implements OnDestroy {
   });
 
   readonly activeModule = signal<'grid' | 'room' | 'system'>(this.resolveModule(this.router.url));
+  readonly accountLabel = computed(() => {
+    const role = this.authApi.user()?.role;
+    if (role === 'creator') {
+      return 'Creator';
+    }
+    if (role === 'admin') {
+      return 'Admin';
+    }
+    return 'Member';
+  });
 
   ngOnDestroy() {
     this.subscription.unsubscribe();

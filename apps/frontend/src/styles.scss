@@ -13,6 +13,7 @@
   --accent: #ff5974;
   --accent-2: #ff8f73;
   --accent-3: #ffd7ca;
+  --accent-teal: #1bb7a7;
   --shadow-lg: 0 22px 60px rgba(0, 0, 0, 0.35);
   --shadow-sm: 0 10px 26px rgba(0, 0, 0, 0.22);
 }
@@ -28,7 +29,7 @@ body {
   color: var(--text);
   background:
     radial-gradient(circle at top, rgba(255, 89, 116, 0.14), transparent 18%),
-    radial-gradient(circle at 18% 14%, rgba(255, 143, 115, 0.1), transparent 20%),
+    radial-gradient(circle at 18% 14%, rgba(27, 183, 167, 0.08), transparent 16%),
     linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
 }
 
@@ -59,10 +60,16 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 16px 24px;
+  padding: 14px 24px;
   border-bottom: 1px solid var(--line);
   background: rgba(10, 7, 14, 0.82);
   backdrop-filter: blur(18px);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .brand {
@@ -161,6 +168,28 @@ button {
   background: rgba(255, 215, 202, 0.94);
 }
 
+.account-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.account-name {
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+.account-role {
+  color: var(--accent-3);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .topnav {
   display: flex;
   align-items: center;
@@ -178,6 +207,31 @@ button {
 .topnav a:hover {
   color: var(--text);
   background: rgba(255, 255, 255, 0.05);
+}
+
+.section-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(8, 6, 12, 0.65);
+}
+
+.section-tab {
+  padding: 11px 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 2px solid transparent;
+}
+
+.section-tab.active,
+.section-tab:hover {
+  color: #fff;
+  border-bottom-color: var(--accent-2);
 }
 
 .page {
@@ -309,8 +363,9 @@ button {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(8, 6, 14, 0.04), transparent 35%, rgba(8, 6, 14, 0.78)),
-    radial-gradient(circle at 70% 18%, rgba(255, 143, 115, 0.14), transparent 28%);
+    linear-gradient(180deg, rgba(8, 6, 14, 0.04), transparent 35%, rgba(8, 6, 14, 0.82)),
+    radial-gradient(circle at 70% 18%, rgba(27, 183, 167, 0.14), transparent 24%),
+    radial-gradient(circle at 30% 20%, rgba(255, 143, 115, 0.14), transparent 24%);
 }
 
 .catalog-monogram {
@@ -337,7 +392,6 @@ button {
   flex-direction: column;
   justify-content: space-between;
   padding: 10px;
-  pointer-events: none;
 }
 
 .catalog-topline,
@@ -352,28 +406,80 @@ button {
   align-items: end;
 }
 
+.follow-badge {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 6, 14, 0.66);
+  color: #fff;
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.status-tag-new {
+  background: #8ec63f;
+  color: #fff;
+}
+
+.status-tag-vip {
+  background: rgba(255, 143, 115, 0.9);
+  color: #fff;
+}
+
 .catalog-copy {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   text-align: left;
 }
 
+.catalog-identity,
+.catalog-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .catalog-copy strong,
-.catalog-copy span {
+.catalog-copy span,
+.catalog-copy i {
   color: #fff;
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.56);
 }
 
 .catalog-copy strong {
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   line-height: 1.1;
 }
 
-.catalog-copy span {
-  font-size: 0.76rem;
-  color: rgba(247, 241, 248, 0.88);
+.catalog-age,
+.catalog-flag,
+.catalog-meta-row,
+.catalog-description {
+  font-size: 0.74rem;
+}
+
+.catalog-description {
+  color: rgba(247, 241, 248, 0.92);
+  line-height: 1.2;
+}
+
+.catalog-meta-row {
+  color: rgba(247, 241, 248, 0.84);
 }
 
 .catalog-metrics {
@@ -752,6 +858,7 @@ button {
 
 @media (max-width: 640px) {
   .topbar,
+  .section-tabs,
   .page,
   .page-catalog,
   .site-footer {
@@ -763,6 +870,12 @@ button {
     flex-wrap: wrap;
   }
 
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
   .brand-copy small {
     display: none;
   }
@@ -771,6 +884,10 @@ button {
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+
+  .section-tabs {
+    overflow: auto;
   }
 
   .catalog-grid {
