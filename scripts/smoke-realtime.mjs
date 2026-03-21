@@ -1,7 +1,17 @@
 import { io } from 'socket.io-client';
 
 const apiBase = 'http://localhost:3000';
-const usernameSuffix = Math.floor(Math.random() * 9000 + 1000);
+const creatorUser = {
+  email: 'smoke.creator@naughtybox.local',
+  username: 'smokecreator',
+  password: 'Naughtybox123!',
+};
+const viewerUser = {
+  email: 'smoke.viewer.chat@naughtybox.local',
+  username: 'smokeviewerchat',
+  password: 'Naughtybox123!',
+};
+const roomSlug = 'smoke-realtime-room';
 
 async function request(path, options = {}) {
   const response = await fetch(`${apiBase}${path}`, options);
@@ -15,16 +25,27 @@ async function request(path, options = {}) {
   return data;
 }
 
+async function getOrCreateUser(account) {
+  try {
+    return await request('/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(account),
+    });
+  } catch {
+    return request('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        emailOrUsername: account.username,
+        password: account.password,
+      }),
+    });
+  }
+}
+
 async function main() {
-  const creator = await request('/auth/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: `creator${usernameSuffix}@example.com`,
-      username: `creator${usernameSuffix}`,
-      password: 'Naughtybox123!',
-    }),
-  });
+  const creator = await getOrCreateUser(creatorUser);
 
   await request('/creator/profile', {
     method: 'PUT',
@@ -33,8 +54,8 @@ async function main() {
       Authorization: `Bearer ${creator.token}`,
     },
     body: JSON.stringify({
-      displayName: `Creator ${usernameSuffix}`,
-      slug: `creator-room-${usernameSuffix}`,
+      displayName: 'Realtime Smoke Creator',
+      slug: roomSlug,
       bio: 'Realtime smoke creator',
       tags: ['smoke', 'chat'],
     }),
@@ -53,15 +74,7 @@ async function main() {
     }),
   });
 
-  const viewer = await request('/auth/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: `viewer${usernameSuffix}@example.com`,
-      username: `viewer${usernameSuffix}`,
-      password: 'Naughtybox123!',
-    }),
-  });
+  const viewer = await getOrCreateUser(viewerUser);
 
   const walletBefore = await request('/wallet/dev-credit', {
     method: 'POST',
@@ -70,8 +83,7 @@ async function main() {
     },
   });
 
-  const messageBody = `smoke message ${usernameSuffix}`;
-  const roomSlug = `creator-room-${usernameSuffix}`;
+  const messageBody = `smoke message ${Date.now()}`;
 
   await new Promise((resolve, reject) => {
     const socket = io('http://localhost:4200', {

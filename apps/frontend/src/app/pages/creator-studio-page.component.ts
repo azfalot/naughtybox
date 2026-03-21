@@ -14,8 +14,8 @@ import { WalletApiService } from '../services/wallet-api.service';
     <main class="page page-wide">
       <section *ngIf="!authApi.isAuthenticated()" class="panel-card studio-empty">
         <p class="eyebrow">Creator Studio</p>
-        <h1 class="lobby-title">Necesitas iniciar sesion</h1>
-        <p class="muted">El estudio protege perfil, stream key, chat privado y futuras capas de pagos/tokens.</p>
+        <h1 class="lobby-title">Necesitas iniciar sesión</h1>
+        <p class="muted">El estudio protege perfil, stream key, chat privado y futuras capas de pagos y tokens.</p>
         <div class="studio-actions">
           <a class="text-link" routerLink="/login">Entrar</a>
           <a class="text-link" routerLink="/register">Crear cuenta</a>
@@ -27,7 +27,7 @@ import { WalletApiService } from '../services/wallet-api.service';
           <section class="panel-card">
             <p class="eyebrow">Creator Studio</p>
             <h1 class="lobby-title">Tu sala y tu identidad</h1>
-            <p class="muted">Configura perfil, slug y sala publica. La stream key sigue tu slug por ahora.</p>
+            <p class="muted">Configura perfil, slug y sala pública. La stream key sigue tu slug por ahora.</p>
           </section>
 
           <section class="panel-card">
@@ -62,10 +62,10 @@ import { WalletApiService } from '../services/wallet-api.service';
           </section>
 
           <section class="panel-card">
-            <h2 class="mini-title">Sala publica</h2>
+            <h2 class="mini-title">Sala pública</h2>
             <form class="studio-form" (submit)="saveRoom($event)">
               <label>
-                <span>Titulo</span>
+                <span>Título</span>
                 <input name="title" [value]="dashboard()?.room?.title ?? ''" />
               </label>
               <label>
@@ -73,7 +73,7 @@ import { WalletApiService } from '../services/wallet-api.service';
                 <input name="tags" [value]="(dashboard()?.room?.tags ?? []).join(', ')" />
               </label>
               <label class="studio-span">
-                <span>Descripcion</span>
+                <span>Descripción</span>
                 <textarea name="description">{{ dashboard()?.room?.description ?? '' }}</textarea>
               </label>
               <button type="submit">Guardar sala</button>
@@ -123,7 +123,7 @@ import { WalletApiService } from '../services/wallet-api.service';
               </div>
               <div>
                 <p class="muted stat-label">Hold</p>
-                <strong>{{ billing.payoutHoldDays }} dias</strong>
+                <strong>{{ billing.payoutHoldDays }} días</strong>
               </div>
             </div>
             <ul class="helper-list" style="margin-top: 14px;">

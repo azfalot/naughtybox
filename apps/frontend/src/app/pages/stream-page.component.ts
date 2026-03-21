@@ -17,7 +17,7 @@ type VirtualCreatorProfile = {
 const DEFAULT_PROFILE: VirtualCreatorProfile = {
   avatar: '/assets/models/sara-bloom.svg',
   headline: 'Creator-first live room',
-  bio: 'Perfil virtual de referencia para validar branding, tono visual y estructura de la sala.',
+  bio: 'Perfil virtual de referencia para validar branding, tono visual y densidad de la sala.',
 };
 
 const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
@@ -34,9 +34,9 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
   imports: [CommonModule, RouterLink, StreamPlayerComponent],
   template: `
     <main class="page page-wide">
-      <a class="muted" routerLink="/">← Volver al listado</a>
+      <a class="muted back-link" routerLink="/">Volver al listado</a>
 
-      <section *ngIf="loading()" class="page-state">Cargando stream...</section>
+      <section *ngIf="loading()" class="page-state">Cargando sala...</section>
       <section *ngIf="error()" class="page-state">{{ error() }}</section>
 
       <section *ngIf="stream()" class="stream-layout">
@@ -45,30 +45,37 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
             <app-stream-player [src]="stream()!.playback.hlsUrl" [controls]="true" [muted]="false"></app-stream-player>
           </div>
 
-          <div class="panel-card" style="margin-top: 18px;">
-            <span [class]="stream()!.isLive ? 'badge-live' : 'badge-offline'">
-              {{ stream()!.isLive ? 'En directo' : 'Offline' }}
-            </span>
-            <span class="viewer-pill" style="margin-left: 10px;">{{ stream()!.currentViewers || 0 }} viendo</span>
-            <h1 style="margin-top: 14px;">{{ stream()!.title }}</h1>
-            <p class="hero-copy">{{ stream()!.creatorName }} · {{ stream()!.description }}</p>
-            <div class="creator-grid">
+          <section class="panel-card room-summary room-summary-page">
+            <div class="room-summary-head">
               <div>
-                <p class="muted stat-label">Categoria</p>
+                <h1>{{ stream()!.title }}</h1>
+                <p class="muted">{{ stream()!.creatorName }} · {{ stream()!.description }}</p>
+              </div>
+              <div class="room-status-pills">
+                <span [class]="stream()!.isLive ? 'badge-live' : 'badge-offline'">
+                  {{ stream()!.isLive ? 'En directo' : 'Offline' }}
+                </span>
+                <span class="viewer-pill">{{ stream()!.currentViewers || 0 }} viendo</span>
+              </div>
+            </div>
+
+            <div class="creator-grid creator-grid-tight">
+              <div>
+                <p class="muted stat-label">Categorías</p>
                 <strong>{{ stream()!.tags.join(' · ') || 'General' }}</strong>
               </div>
               <div>
                 <p class="muted stat-label">Estado</p>
-                <strong>{{ stream()!.isLive ? 'Emitiendo ahora' : 'Sin emision' }}</strong>
+                <strong>{{ stream()!.isLive ? 'Emitiendo ahora' : 'Sin emisión' }}</strong>
               </div>
               <div>
-                <p class="muted stat-label">Chat</p>
-                <strong>{{ authApi.isAuthenticated() ? 'realtime' : 'login requerido' }}</strong>
+                <p class="muted stat-label">Acceso al chat</p>
+                <strong>{{ authApi.isAuthenticated() ? 'Usuarios registrados' : 'Requiere login' }}</strong>
               </div>
             </div>
-          </div>
+          </section>
 
-          <section class="panel-card" style="margin-top: 18px;">
+          <section class="panel-card room-summary">
             <h2 class="mini-title">Sobre la creadora</h2>
             <div class="creator-profile">
               <img
@@ -78,7 +85,7 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
               />
               <div>
                 <strong>{{ creatorProfile().headline }}</strong>
-                <p class="muted">{{ creatorProfile().bio }}</p>
+                <p class="muted room-bio">{{ creatorProfile().bio }}</p>
               </div>
             </div>
           </section>
@@ -88,7 +95,7 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
           <section class="panel-card chat-panel">
             <div class="chat-header">
               <h2 class="mini-title" style="margin: 0;">Chat en vivo</h2>
-              <span class="muted">{{ authApi.isAuthenticated() ? 'realtime' : 'privado' }}</span>
+              <span class="muted">{{ authApi.isAuthenticated() ? 'Realtime' : 'Privado' }}</span>
             </div>
 
             <div class="chat-messages">
@@ -109,7 +116,7 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
 
             <ng-template #loginForChat>
               <div class="chat-locked">
-                <p class="muted">El chat queda reservado a usuarios registrados para moderacion, seguridad y capa premium.</p>
+                <p class="muted">El chat queda reservado a usuarios registrados para moderación y seguridad.</p>
                 <a class="text-link" routerLink="/login">Entrar para chatear</a>
               </div>
             </ng-template>
@@ -131,26 +138,6 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
               <li *ngFor="let transaction of wallet()!.recentTransactions.slice(0, 5)">
                 {{ transaction.type }} · {{ transaction.amount }} · {{ transaction.balanceAfter }}
               </li>
-            </ul>
-          </section>
-
-          <section class="panel-card">
-            <h2 class="mini-title">Configurar OBS</h2>
-            <div class="helper-list">
-              <p class="muted">Servidor RTMP</p>
-              <span class="inline-code">{{ stream()!.publish.obsServer }}</span>
-              <p class="muted" style="margin-top: 14px;">Stream key</p>
-              <span class="inline-code">{{ stream()!.publish.streamKey }}</span>
-            </div>
-          </section>
-
-          <section class="panel-card">
-            <h2 class="mini-title">Checklist de prueba</h2>
-            <ul class="helper-list">
-              <li>Abrir OBS y configurar el servidor RTMP.</li>
-              <li>Usar la stream key exacta de esta sala.</li>
-              <li>Iniciar emision y recargar la pagina si el stream tarda unos segundos.</li>
-              <li>Validar reproduccion desde otra pestaña o dispositivo.</li>
             </ul>
           </section>
 
@@ -180,7 +167,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     const slug = this.route.snapshot.paramMap.get('slug');
 
     if (!slug) {
-      this.error.set('Sala no valida.');
+      this.error.set('Sala no válida.');
       this.loading.set(false);
       return;
     }

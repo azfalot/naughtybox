@@ -32,7 +32,6 @@ import { AuthApiService } from './services/auth-api.service';
           <a *ngIf="!authApi.isAuthenticated()" routerLink="/login">Entrar</a>
           <a *ngIf="!authApi.isAuthenticated()" routerLink="/register">Registro</a>
           <a *ngIf="authApi.isAuthenticated()" href="#" (click)="logout($event)">Salir</a>
-          <a href="/api/health" target="_blank" rel="noreferrer">API</a>
         </nav>
       </header>
 
@@ -42,7 +41,7 @@ import { AuthApiService } from './services/auth-api.service';
         <div>
           <strong>Naughtybox</strong>
           <p>
-            Copyright © 2026 Naughtybox. All rights reserved. Branding, interface,
+            Copyright (c) 2026 Naughtybox. All rights reserved. Branding, interface,
             software, layout systems and platform assets are protected intellectual property.
           </p>
         </div>
@@ -81,10 +80,6 @@ export class AppComponent implements OnDestroy {
     }
 
     if (url.startsWith('/studio')) {
-      return 'system';
-    }
-
-    if (url.startsWith('/api')) {
       return 'system';
     }
 

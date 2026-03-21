@@ -8,11 +8,11 @@
     <linearGradient id="accent" x1="154" y1="194" x2="618" y2="756" gradientUnits="userSpaceOnUse">
       <stop stop-color="#FF8F73" stop-opacity="0.95"/>
       <stop offset="0.5" stop-color="#F26C8D" stop-opacity="0.9"/>
-      <stop offset="1" stop-color="#18A89F" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#FF5B73" stop-opacity="0.92"/>
     </linearGradient>
     <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(608 182) rotate(130.923) scale(308.633 264.766)">
-      <stop stop-color="#18A89F" stop-opacity="0.42"/>
-      <stop offset="1" stop-color="#18A89F" stop-opacity="0"/>
+      <stop stop-color="#FF936D" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#FF936D" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(188 210) rotate(60.0119) scale(245.882 214.235)">
       <stop stop-color="#FF6B7D" stop-opacity="0.4"/>
@@ -30,7 +30,7 @@
   <rect width="768" height="960" rx="34" fill="url(#bg)"/>
   <rect width="768" height="960" rx="34" fill="url(#glowA)"/>
   <rect width="768" height="960" rx="34" fill="url(#glowB)"/>
-  <circle cx="616" cy="173" r="72" fill="#18A89F" fill-opacity="0.1"/>
+  <circle cx="616" cy="173" r="72" fill="#FF936D" fill-opacity="0.08"/>
   <circle cx="164" cy="212" r="78" fill="#FF6B7D" fill-opacity="0.12"/>
   <path d="M168 790C168 653.072 278.072 543 415 543H440C576.928 543 687 653.072 687 790V960H168V790Z" fill="url(#accent)" fill-opacity="0.96"/>
   <path d="M543 368C543 473.486 470.486 561 381 561C291.514 561 219 473.486 219 368C219 262.514 291.514 175 381 175C470.486 175 543 262.514 543 368Z" fill="url(#hair)"/>
@@ -47,11 +47,8 @@
   <path d="M356 384C382.5 365 403.5 366.5 425 382" stroke="#3A2331" stroke-width="11" stroke-linecap="round"/>
   <path d="M439 382C459.5 366.5 480.5 365 505 384" stroke="#3A2331" stroke-width="11" stroke-linecap="round"/>
   <path d="M414 477L401 518" stroke="#D39289" stroke-width="8" stroke-linecap="round"/>
-  <path d="M233 775C233 703.203 291.203 645 363 645H489C560.797 645 619 703.203 619 775V960H233V775Z" fill="#1B1327" fill-opacity="0.68"/>
+  <path d="M233 775C233 703.203 291.203 645 363 645H489C560.797 645 619 703.203 619 775V960H233V775Z" fill="#1B1327" fill-opacity="0.7"/>
   <path d="M298 724C298 693.072 323.072 668 354 668H497C527.928 668 553 693.072 553 724V960H298V724Z" fill="#140F1F"/>
   <path d="M320 717C338.621 682.355 374.565 659 414.5 659C454.435 659 490.379 682.355 509 717V960H320V717Z" fill="#0F0B16"/>
-  <path d="M319 717C348.997 746.524 385.41 761.286 423 761.286C460.59 761.286 497.003 746.524 527 717" stroke="#18A89F" stroke-opacity="0.6" stroke-width="8"/>
-  <rect x="76" y="72" width="616" height="816" rx="30" stroke="white" stroke-opacity="0.06" stroke-width="2"/>
-  <text x="108" y="826" fill="#F8F4FB" font-size="42" font-family="Segoe UI, Arial, sans-serif" font-weight="700">Sara Bloom</text>
-  <text x="108" y="868" fill="#B8ADCA" font-size="20" font-family="Segoe UI, Arial, sans-serif" letter-spacing="3">VIRTUAL CREATOR / DEMO PROFILE</text>
+  <path d="M319 717C348.997 746.524 385.41 761.286 423 761.286C460.59 761.286 497.003 746.524 527 717" stroke="#FF936D" stroke-opacity="0.5" stroke-width="8"/>
 </svg>
