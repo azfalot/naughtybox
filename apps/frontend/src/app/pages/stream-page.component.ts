@@ -1,32 +1,26 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ChatMessage, StreamDetails, WalletSummary } from '@naughtybox/shared-types';
+import { ChatMessage, CreatorPublicProfile, StreamDetails, WalletSummary } from '@naughtybox/shared-types';
 import { StreamPlayerComponent } from '../stream-player.component';
 import { AuthApiService } from '../services/auth-api.service';
 import { ChatApiService } from '../services/chat-api.service';
 import { StreamsApiService } from '../services/streams-api.service';
 import { WalletApiService } from '../services/wallet-api.service';
 
-type CreatorSummary = {
-  headline: string;
-  bio: string;
+type MediaPreview = {
+  title: string;
+  type: 'free' | 'premium' | 'store';
+  price?: string;
 };
 
-const DEFAULT_PROFILE: CreatorSummary = {
-  headline: 'Live room',
-  bio: 'Sala pública pensada para emitir, conversar y validar la experiencia principal del producto con una lectura más limpia.',
-};
-
-const CREATOR_PROFILES: Record<string, CreatorSummary> = {
-  'luna-en-directo': {
-    headline: 'Sala orientada a catálogo',
-    bio: 'Luna representa un perfil directo: foco total en el vídeo, chat lateral y una biografía sobria para no romper la jerarquía visual.',
-  },
-  'jade-after-hours': {
-    headline: 'Sesión nocturna',
-    bio: 'Jade sirve como referencia para validar una sala algo más editorial, manteniendo el vídeo protagonista y los datos secundarios contenidos.',
-  },
+const DEFAULT_PROFILE: CreatorPublicProfile = {
+  displayName: 'Creator',
+  slug: 'creator',
+  bio: 'Perfil publico pensado para combinar directo, biografia, tienda y contenido bajo demanda.',
+  languages: [],
+  categories: [],
+  subcategories: [],
 };
 
 @Component({
@@ -63,23 +57,98 @@ const CREATOR_PROFILES: Record<string, CreatorSummary> = {
             <div class="creator-grid creator-grid-tight">
               <div>
                 <p class="muted stat-label">Categorias</p>
-                <strong>{{ stream()!.tags.join(' · ') || 'General' }}</strong>
+                <strong>{{ publicProfile().categories.join(' · ') || 'General' }}</strong>
               </div>
               <div>
-                <p class="muted stat-label">Estado</p>
-                <strong>{{ stream()!.isLive ? 'Emitiendo ahora' : 'Sin emision' }}</strong>
+                <p class="muted stat-label">Pais</p>
+                <strong>{{ publicProfile().country || 'Sin definir' }}</strong>
               </div>
               <div>
-                <p class="muted stat-label">Acceso al chat</p>
-                <strong>{{ authApi.isAuthenticated() ? 'Usuarios registrados' : 'Requiere login' }}</strong>
+                <p class="muted stat-label">Interesada en</p>
+                <strong>{{ publicProfile().interestedIn || 'Sin definir' }}</strong>
               </div>
             </div>
           </section>
 
-          <section class="panel-card room-summary">
-            <h2 class="mini-title">Sobre la creadora</h2>
-            <strong>{{ creatorSummary().headline }}</strong>
-            <p class="muted room-bio">{{ creatorSummary().bio }}</p>
+          <section class="panel-card profile-hero" [style.background]="coverStyle()">
+            <div class="profile-hero-copy">
+              <p class="eyebrow">Perfil</p>
+              <h2>{{ publicProfile().displayName }}</h2>
+              <p class="muted">{{ publicProfile().bio }}</p>
+            </div>
+
+            <div class="profile-stats">
+              <div class="profile-stat-box">
+                <strong>{{ followersCount() }}</strong>
+                <span>Followers</span>
+              </div>
+              <div class="profile-stat-box">
+                <strong>{{ profileViewsCount() }}</strong>
+                <span>Visibilidad</span>
+              </div>
+              <div class="profile-stat-box">
+                <strong>#{{ rankingScore() }}</strong>
+                <span>Ranking</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-card profile-section">
+            <div class="profile-section-grid">
+              <div>
+                <h3 class="mini-title">Acerca de {{ publicProfile().displayName }}</h3>
+                <p class="muted room-bio">{{ publicProfile().bio }}</p>
+              </div>
+              <div class="profile-facts">
+                <div><span class="muted">Edad</span><strong>{{ publicProfile().age || '—' }}</strong></div>
+                <div><span class="muted">Genero</span><strong>{{ publicProfile().gender || '—' }}</strong></div>
+                <div><span class="muted">Ciudad</span><strong>{{ publicProfile().city || '—' }}</strong></div>
+                <div><span class="muted">Relacion</span><strong>{{ publicProfile().relationshipStatus || '—' }}</strong></div>
+                <div><span class="muted">Body type</span><strong>{{ publicProfile().bodyType || '—' }}</strong></div>
+                <div><span class="muted">Idiomas</span><strong>{{ publicProfile().languages.join(' · ') || '—' }}</strong></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-card profile-section">
+            <div class="profile-section-header">
+              <h3 class="mini-title">Redes y enlaces</h3>
+            </div>
+            <div class="social-links-grid">
+              <a *ngIf="publicProfile().instagramUrl" class="social-link-card" [href]="publicProfile().instagramUrl" target="_blank" rel="noreferrer">Instagram</a>
+              <a *ngIf="publicProfile().xUrl" class="social-link-card" [href]="publicProfile().xUrl" target="_blank" rel="noreferrer">X</a>
+              <a *ngIf="publicProfile().websiteUrl" class="social-link-card" [href]="publicProfile().websiteUrl" target="_blank" rel="noreferrer">Website</a>
+            </div>
+          </section>
+
+          <section class="panel-card profile-section">
+            <div class="profile-section-header">
+              <h3 class="mini-title">Tienda destacada</h3>
+              <a class="text-link" href="#">Ver tienda</a>
+            </div>
+            <div class="media-strip">
+              <article class="media-card" *ngFor="let item of storePreview()">
+                <div class="media-card-thumb media-card-store">{{ item.type === 'store' ? 'SHOP' : 'MEDIA' }}</div>
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.price || 'Disponible' }}</span>
+              </article>
+            </div>
+          </section>
+
+          <section class="panel-card profile-section">
+            <div class="profile-section-header">
+              <h3 class="mini-title">Videos</h3>
+              <a class="text-link" href="#">Ver todo</a>
+            </div>
+            <div class="media-strip">
+              <article class="media-card" *ngFor="let item of videoPreview()">
+                <div class="media-card-thumb" [class.media-card-premium]="item.type === 'premium'">
+                  {{ item.type === 'premium' ? 'VIP' : 'FREE' }}
+                </div>
+                <strong>{{ item.title }}</strong>
+                <span>{{ item.price || 'Gratis' }}</span>
+              </article>
+            </div>
           </section>
         </div>
 
@@ -108,7 +177,7 @@ const CREATOR_PROFILES: Record<string, CreatorSummary> = {
 
             <ng-template #loginForChat>
               <div class="chat-locked">
-                <p class="muted">El chat queda reservado a usuarios registrados para moderacion y seguridad.</p>
+                <p class="muted">El chat queda reservado a usuarios registrados para moderacion, seguridad y futuras reglas para tippers o miembros VIP.</p>
                 <a class="text-link" routerLink="/login">Entrar para chatear</a>
               </div>
             </ng-template>
@@ -133,6 +202,15 @@ const CREATOR_PROFILES: Record<string, CreatorSummary> = {
             </ul>
           </section>
 
+          <section class="panel-card">
+            <h2 class="mini-title">Acceso premium</h2>
+            <ul class="helper-list">
+              <li>Private shows por tokens</li>
+              <li>Chat solo para tippers o miembros</li>
+              <li>Integracion futura de toys conectados</li>
+            </ul>
+          </section>
+
           <p *ngIf="notice()" class="studio-notice">{{ notice() }}</p>
         </aside>
       </section>
@@ -151,9 +229,12 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   readonly loading = signal(true);
   readonly error = signal('');
   readonly notice = signal('');
-  readonly creatorSummary = signal<CreatorSummary>(DEFAULT_PROFILE);
   readonly messages = signal<ChatMessage[]>([]);
   readonly wallet = signal<WalletSummary | null>(null);
+  readonly publicProfile = computed<CreatorPublicProfile>(() => this.stream()?.creatorProfile ?? DEFAULT_PROFILE);
+  readonly followersCount = computed(() => 1800 + this.publicProfile().categories.length * 240);
+  readonly profileViewsCount = computed(() => 12000 + this.publicProfile().subcategories.length * 750);
+  readonly rankingScore = computed(() => 120 + this.publicProfile().languages.length * 12);
 
   async ngOnInit() {
     const slug = this.route.snapshot.paramMap.get('slug');
@@ -186,6 +267,30 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
     }
+  }
+
+  coverStyle() {
+    return (
+      this.publicProfile().coverImageUrl ??
+      'linear-gradient(135deg, rgba(255,89,116,0.32), rgba(27,183,167,0.22), rgba(16,11,24,0.92))'
+    );
+  }
+
+  storePreview(): MediaPreview[] {
+    return [
+      { title: 'Wishlist premium', type: 'store', price: '12 tokens' },
+      { title: 'Private pack', type: 'store', price: '45 tokens' },
+      { title: 'Gift request', type: 'store', price: '25 tokens' },
+    ];
+  }
+
+  videoPreview(): MediaPreview[] {
+    return [
+      { title: 'Teaser diario', type: 'free' },
+      { title: 'Afterhours cut', type: 'premium', price: '18 tokens' },
+      { title: 'VIP backstage', type: 'premium', price: '32 tokens' },
+      { title: 'Free intro clip', type: 'free' },
+    ];
   }
 
   async sendMessage(event: Event) {
@@ -228,9 +333,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
       this.loading.set(true);
     }
 
-    const stream = await this.streamsApi.getStream(slug);
-    this.stream.set(stream);
-    this.creatorSummary.set(CREATOR_PROFILES[slug] ?? DEFAULT_PROFILE);
+    this.stream.set(await this.streamsApi.getStream(slug));
     this.error.set('');
 
     if (showLoader) {

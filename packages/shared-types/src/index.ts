@@ -35,10 +35,46 @@ export interface CreatorProfile {
   slug: string;
   bio: string;
   avatarUrl?: string;
+  coverImageUrl?: string;
   accentColor?: string;
   tags: string[];
+  age?: number;
+  gender?: string;
+  country?: string;
+  city?: string;
+  interestedIn?: string;
+  relationshipStatus?: string;
+  bodyType?: string;
+  languages: string[];
+  categories: string[];
+  subcategories: string[];
+  instagramUrl?: string;
+  xUrl?: string;
+  websiteUrl?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreatorPublicProfile {
+  displayName: string;
+  slug: string;
+  bio: string;
+  avatarUrl?: string;
+  coverImageUrl?: string;
+  accentColor?: string;
+  age?: number;
+  gender?: string;
+  country?: string;
+  city?: string;
+  interestedIn?: string;
+  relationshipStatus?: string;
+  bodyType?: string;
+  languages: string[];
+  categories: string[];
+  subcategories: string[];
+  instagramUrl?: string;
+  xUrl?: string;
+  websiteUrl?: string;
 }
 
 export interface CreatorRoom {
@@ -81,6 +117,7 @@ export interface StreamPublish {
 export interface StreamDetails extends Omit<StreamSummary, 'playbackHlsUrl'> {
   playback: StreamPlayback;
   publish: StreamPublish;
+  creatorProfile?: CreatorPublicProfile;
 }
 
 export interface CreatorDashboard {
@@ -95,8 +132,22 @@ export interface UpsertCreatorProfileRequest {
   slug: string;
   bio?: string;
   avatarUrl?: string;
+  coverImageUrl?: string;
   accentColor?: string;
   tags?: string[];
+  age?: number;
+  gender?: string;
+  country?: string;
+  city?: string;
+  interestedIn?: string;
+  relationshipStatus?: string;
+  bodyType?: string;
+  languages?: string[];
+  categories?: string[];
+  subcategories?: string[];
+  instagramUrl?: string;
+  xUrl?: string;
+  websiteUrl?: string;
 }
 
 export interface UpsertCreatorRoomRequest {

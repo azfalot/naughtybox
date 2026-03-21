@@ -14,7 +14,7 @@ import { WalletApiService } from '../services/wallet-api.service';
     <main class="page page-wide">
       <section *ngIf="!authApi.isAuthenticated()" class="panel-card studio-empty">
         <p class="eyebrow">Creator Studio</p>
-        <h1 class="lobby-title">Necesitas iniciar sesión</h1>
+        <h1 class="lobby-title">Necesitas iniciar sesion</h1>
         <p class="muted">El estudio protege perfil, stream key, chat privado y futuras capas de pagos y tokens.</p>
         <div class="studio-actions">
           <a class="text-link" routerLink="/login">Entrar</a>
@@ -27,7 +27,7 @@ import { WalletApiService } from '../services/wallet-api.service';
           <section class="panel-card">
             <p class="eyebrow">Creator Studio</p>
             <h1 class="lobby-title">Tu sala y tu identidad</h1>
-            <p class="muted">Configura perfil, slug y sala pública. La stream key sigue tu slug por ahora.</p>
+            <p class="muted">Configura perfil, categorias, redes, biografia y sala publica. Esto alimentara filtros, rankings, follows y el perfil comercial.</p>
           </section>
 
           <section class="panel-card">
@@ -41,31 +41,87 @@ import { WalletApiService } from '../services/wallet-api.service';
                 <span>Slug</span>
                 <input name="slug" [value]="dashboard()?.profile?.slug ?? dashboard()?.user?.username ?? ''" />
               </label>
-              <label class="studio-span">
-                <span>Bio</span>
-                <textarea name="bio">{{ dashboard()?.profile?.bio ?? '' }}</textarea>
+              <label>
+                <span>Edad</span>
+                <input name="age" type="number" min="18" [value]="dashboard()?.profile?.age ?? ''" />
+              </label>
+              <label>
+                <span>Genero</span>
+                <input name="gender" [value]="dashboard()?.profile?.gender ?? ''" />
+              </label>
+              <label>
+                <span>Pais</span>
+                <input name="country" [value]="dashboard()?.profile?.country ?? ''" />
+              </label>
+              <label>
+                <span>Ciudad</span>
+                <input name="city" [value]="dashboard()?.profile?.city ?? ''" />
+              </label>
+              <label>
+                <span>Interesada en</span>
+                <input name="interestedIn" [value]="dashboard()?.profile?.interestedIn ?? ''" />
+              </label>
+              <label>
+                <span>Relacion</span>
+                <input name="relationshipStatus" [value]="dashboard()?.profile?.relationshipStatus ?? ''" />
+              </label>
+              <label>
+                <span>Body type</span>
+                <input name="bodyType" [value]="dashboard()?.profile?.bodyType ?? ''" />
+              </label>
+              <label>
+                <span>Accent color</span>
+                <input name="accentColor" [value]="dashboard()?.profile?.accentColor ?? '#ff5b73'" />
               </label>
               <label>
                 <span>Avatar URL</span>
                 <input name="avatarUrl" [value]="dashboard()?.profile?.avatarUrl ?? ''" />
               </label>
               <label>
-                <span>Accent color</span>
-                <input name="accentColor" [value]="dashboard()?.profile?.accentColor ?? '#ff5b73'" />
+                <span>Cover URL</span>
+                <input name="coverImageUrl" [value]="dashboard()?.profile?.coverImageUrl ?? ''" />
+              </label>
+              <label class="studio-span">
+                <span>Bio</span>
+                <textarea name="bio">{{ dashboard()?.profile?.bio ?? '' }}</textarea>
+              </label>
+              <label class="studio-span">
+                <span>Idiomas</span>
+                <input name="languages" [value]="(dashboard()?.profile?.languages ?? []).join(', ')" />
+              </label>
+              <label class="studio-span">
+                <span>Categorias</span>
+                <input name="categories" [value]="(dashboard()?.profile?.categories ?? []).join(', ')" />
+              </label>
+              <label class="studio-span">
+                <span>Subcategorias</span>
+                <input name="subcategories" [value]="(dashboard()?.profile?.subcategories ?? []).join(', ')" />
               </label>
               <label class="studio-span">
                 <span>Tags</span>
                 <input name="tags" [value]="(dashboard()?.profile?.tags ?? []).join(', ')" />
+              </label>
+              <label>
+                <span>Instagram</span>
+                <input name="instagramUrl" [value]="dashboard()?.profile?.instagramUrl ?? ''" />
+              </label>
+              <label>
+                <span>X / Twitter</span>
+                <input name="xUrl" [value]="dashboard()?.profile?.xUrl ?? ''" />
+              </label>
+              <label>
+                <span>Website</span>
+                <input name="websiteUrl" [value]="dashboard()?.profile?.websiteUrl ?? ''" />
               </label>
               <button type="submit">Guardar perfil</button>
             </form>
           </section>
 
           <section class="panel-card">
-            <h2 class="mini-title">Sala pública</h2>
+            <h2 class="mini-title">Sala publica</h2>
             <form class="studio-form" (submit)="saveRoom($event)">
               <label>
-                <span>Título</span>
+                <span>Titulo</span>
                 <input name="title" [value]="dashboard()?.room?.title ?? ''" />
               </label>
               <label>
@@ -73,7 +129,7 @@ import { WalletApiService } from '../services/wallet-api.service';
                 <input name="tags" [value]="(dashboard()?.room?.tags ?? []).join(', ')" />
               </label>
               <label class="studio-span">
-                <span>Descripción</span>
+                <span>Descripcion</span>
                 <textarea name="description">{{ dashboard()?.room?.description ?? '' }}</textarea>
               </label>
               <button type="submit">Guardar sala</button>
@@ -105,6 +161,17 @@ import { WalletApiService } from '../services/wallet-api.service';
             <span class="inline-code">rtmp://localhost:1935/live</span>
             <p class="muted" style="margin-top: 14px;">Stream key</p>
             <span class="inline-code">{{ room.streamKey }}</span>
+            <p class="muted" style="margin-top: 14px;">Siguiente fase</p>
+            <span class="inline-code">Broadcast web desde navegador</span>
+          </section>
+
+          <section class="panel-card" *ngIf="dashboard()?.profile as profile">
+            <h2 class="mini-title">Descubrimiento</h2>
+            <ul class="helper-list">
+              <li>{{ profile.categories.join(' · ') || 'Sin categorias' }}</li>
+              <li>{{ profile.subcategories.join(' · ') || 'Sin subcategorias' }}</li>
+              <li>{{ profile.languages.join(' · ') || 'Sin idiomas' }}</li>
+            </ul>
           </section>
 
           <section class="panel-card" *ngIf="billing() as billing">
@@ -123,14 +190,9 @@ import { WalletApiService } from '../services/wallet-api.service';
               </div>
               <div>
                 <p class="muted stat-label">Hold</p>
-                <strong>{{ billing.payoutHoldDays }} días</strong>
+                <strong>{{ billing.payoutHoldDays }} dias</strong>
               </div>
             </div>
-            <ul class="helper-list" style="margin-top: 14px;">
-              <li *ngFor="let provider of billing.providers">
-                {{ provider.name }} · {{ provider.status }} · {{ provider.notes }}
-              </li>
-            </ul>
           </section>
 
           <section class="panel-card" *ngIf="wallet() as wallet">
@@ -191,8 +253,22 @@ export class CreatorStudioPageComponent implements OnInit {
         slug: (form.elements.namedItem('slug') as HTMLInputElement)?.value ?? '',
         bio: (form.elements.namedItem('bio') as HTMLTextAreaElement)?.value ?? '',
         avatarUrl: (form.elements.namedItem('avatarUrl') as HTMLInputElement)?.value ?? '',
+        coverImageUrl: (form.elements.namedItem('coverImageUrl') as HTMLInputElement)?.value ?? '',
         accentColor: (form.elements.namedItem('accentColor') as HTMLInputElement)?.value ?? '',
         tags: this.splitTags((form.elements.namedItem('tags') as HTMLInputElement)?.value ?? ''),
+        age: Number((form.elements.namedItem('age') as HTMLInputElement)?.value || 0) || undefined,
+        gender: (form.elements.namedItem('gender') as HTMLInputElement)?.value ?? '',
+        country: (form.elements.namedItem('country') as HTMLInputElement)?.value ?? '',
+        city: (form.elements.namedItem('city') as HTMLInputElement)?.value ?? '',
+        interestedIn: (form.elements.namedItem('interestedIn') as HTMLInputElement)?.value ?? '',
+        relationshipStatus: (form.elements.namedItem('relationshipStatus') as HTMLInputElement)?.value ?? '',
+        bodyType: (form.elements.namedItem('bodyType') as HTMLInputElement)?.value ?? '',
+        languages: this.splitTags((form.elements.namedItem('languages') as HTMLInputElement)?.value ?? ''),
+        categories: this.splitTags((form.elements.namedItem('categories') as HTMLInputElement)?.value ?? ''),
+        subcategories: this.splitTags((form.elements.namedItem('subcategories') as HTMLInputElement)?.value ?? ''),
+        instagramUrl: (form.elements.namedItem('instagramUrl') as HTMLInputElement)?.value ?? '',
+        xUrl: (form.elements.namedItem('xUrl') as HTMLInputElement)?.value ?? '',
+        websiteUrl: (form.elements.namedItem('websiteUrl') as HTMLInputElement)?.value ?? '',
       });
       await this.loadDashboard();
       this.notice.set('Perfil guardado.');

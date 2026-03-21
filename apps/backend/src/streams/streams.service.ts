@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { StreamDetails, StreamSummary } from '@naughtybox/shared-types';
+import { CreatorPublicProfile, StreamDetails, StreamSummary } from '@naughtybox/shared-types';
 import { DatabaseService } from '../database/database.service';
 
 type StreamRow = {
@@ -12,6 +12,22 @@ type StreamRow = {
   is_public: boolean;
   display_name: string;
   avatar_url: string | null;
+  cover_image_url: string | null;
+  accent_color: string | null;
+  profile_bio: string;
+  age: number | null;
+  gender: string | null;
+  country: string | null;
+  city: string | null;
+  interested_in: string | null;
+  relationship_status: string | null;
+  body_type: string | null;
+  languages: string[];
+  categories: string[];
+  subcategories: string[];
+  instagram_url: string | null;
+  x_url: string | null;
+  website_url: string | null;
 };
 
 @Injectable()
@@ -36,7 +52,23 @@ export class StreamsService {
         rooms.stream_key,
         rooms.is_public,
         profiles.display_name,
-        profiles.avatar_url
+        profiles.avatar_url,
+        profiles.cover_image_url,
+        profiles.accent_color,
+        profiles.bio AS profile_bio,
+        profiles.age,
+        profiles.gender,
+        profiles.country,
+        profiles.city,
+        profiles.interested_in,
+        profiles.relationship_status,
+        profiles.body_type,
+        profiles.languages,
+        profiles.categories,
+        profiles.subcategories,
+        profiles.instagram_url,
+        profiles.x_url,
+        profiles.website_url
       FROM creator_rooms rooms
       INNER JOIN creator_profiles profiles ON profiles.id = rooms.creator_profile_id
       WHERE rooms.slug = $1
@@ -88,7 +120,23 @@ export class StreamsService {
         rooms.stream_key,
         rooms.is_public,
         profiles.display_name,
-        profiles.avatar_url
+        profiles.avatar_url,
+        profiles.cover_image_url,
+        profiles.accent_color,
+        profiles.bio AS profile_bio,
+        profiles.age,
+        profiles.gender,
+        profiles.country,
+        profiles.city,
+        profiles.interested_in,
+        profiles.relationship_status,
+        profiles.body_type,
+        profiles.languages,
+        profiles.categories,
+        profiles.subcategories,
+        profiles.instagram_url,
+        profiles.x_url,
+        profiles.website_url
       FROM creator_rooms rooms
       INNER JOIN creator_profiles profiles ON profiles.id = rooms.creator_profile_id
       WHERE rooms.is_public = TRUE
@@ -152,6 +200,31 @@ export class StreamsService {
         streamKey: row.stream_key,
         obsServer: publishBaseUrl,
       },
+      creatorProfile: this.toPublicProfile(row),
+    };
+  }
+
+  private toPublicProfile(row: StreamRow): CreatorPublicProfile {
+    return {
+      displayName: row.display_name,
+      slug: row.room_slug,
+      bio: row.profile_bio,
+      avatarUrl: row.avatar_url ?? undefined,
+      coverImageUrl: row.cover_image_url ?? undefined,
+      accentColor: row.accent_color ?? undefined,
+      age: row.age ?? undefined,
+      gender: row.gender ?? undefined,
+      country: row.country ?? undefined,
+      city: row.city ?? undefined,
+      interestedIn: row.interested_in ?? undefined,
+      relationshipStatus: row.relationship_status ?? undefined,
+      bodyType: row.body_type ?? undefined,
+      languages: row.languages ?? [],
+      categories: row.categories ?? [],
+      subcategories: row.subcategories ?? [],
+      instagramUrl: row.instagram_url ?? undefined,
+      xUrl: row.x_url ?? undefined,
+      websiteUrl: row.website_url ?? undefined,
     };
   }
 }

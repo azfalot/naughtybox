@@ -18,8 +18,22 @@ type CreatorProfileRow = {
   slug: string;
   bio: string;
   avatar_url: string | null;
+  cover_image_url: string | null;
   accent_color: string | null;
   tags: string[];
+  age: number | null;
+  gender: string | null;
+  country: string | null;
+  city: string | null;
+  interested_in: string | null;
+  relationship_status: string | null;
+  body_type: string | null;
+  languages: string[];
+  categories: string[];
+  subcategories: string[];
+  instagram_url: string | null;
+  x_url: string | null;
+  website_url: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -60,8 +74,35 @@ export class CreatorService {
     }
 
     const normalizedSlug = this.normalizeSlug(payload.slug);
-    const tags = payload.tags?.map((tag) => tag.trim()).filter(Boolean) ?? [];
+    const tags = this.normalizeTags(payload.tags);
+    const languages = this.normalizeTags(payload.languages);
+    const categories = this.normalizeTags(payload.categories);
+    const subcategories = this.normalizeTags(payload.subcategories);
     const existing = await this.findProfileByUserId(userId);
+
+    const values = [
+      userId,
+      payload.displayName.trim(),
+      normalizedSlug,
+      payload.bio?.trim() ?? '',
+      payload.avatarUrl?.trim() || null,
+      payload.coverImageUrl?.trim() || null,
+      payload.accentColor?.trim() || null,
+      tags,
+      payload.age ?? null,
+      payload.gender?.trim() || null,
+      payload.country?.trim() || null,
+      payload.city?.trim() || null,
+      payload.interestedIn?.trim() || null,
+      payload.relationshipStatus?.trim() || null,
+      payload.bodyType?.trim() || null,
+      languages,
+      categories,
+      subcategories,
+      payload.instagramUrl?.trim() || null,
+      payload.xUrl?.trim() || null,
+      payload.websiteUrl?.trim() || null,
+    ];
 
     if (existing) {
       const result = await this.database.query<CreatorProfileRow>(
@@ -70,20 +111,26 @@ export class CreatorService {
              slug = $3,
              bio = $4,
              avatar_url = $5,
-             accent_color = $6,
-             tags = $7,
+             cover_image_url = $6,
+             accent_color = $7,
+             tags = $8,
+             age = $9,
+             gender = $10,
+             country = $11,
+             city = $12,
+             interested_in = $13,
+             relationship_status = $14,
+             body_type = $15,
+             languages = $16,
+             categories = $17,
+             subcategories = $18,
+             instagram_url = $19,
+             x_url = $20,
+             website_url = $21,
              updated_at = NOW()
          WHERE user_id = $1
          RETURNING *`,
-        [
-          userId,
-          payload.displayName.trim(),
-          normalizedSlug,
-          payload.bio?.trim() ?? '',
-          payload.avatarUrl?.trim() || null,
-          payload.accentColor?.trim() || null,
-          tags,
-        ],
+        values,
       );
 
       await this.syncRoomSlug(existing.id, normalizedSlug);
@@ -93,21 +140,18 @@ export class CreatorService {
 
     const result = await this.database.query<CreatorProfileRow>(
       `INSERT INTO creator_profiles (
-         id, user_id, display_name, slug, bio, avatar_url, accent_color, tags
+         id, user_id, display_name, slug, bio, avatar_url, cover_image_url, accent_color, tags,
+         age, gender, country, city, interested_in, relationship_status, body_type,
+         languages, categories, subcategories, instagram_url, x_url, website_url
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       VALUES (
+         $22, $1, $2, $3, $4, $5, $6, $7, $8,
+         $9, $10, $11, $12, $13, $14, $15,
+         $16, $17, $18, $19, $20, $21
+       )
        RETURNING *`,
-      [
-        randomUUID(),
-        userId,
-        payload.displayName.trim(),
-        normalizedSlug,
-        payload.bio?.trim() ?? '',
-        payload.avatarUrl?.trim() || null,
-        payload.accentColor?.trim() || null,
-        tags,
-      ],
-    );
+        [...values, randomUUID()],
+      );
 
     await this.usersService.setRole(userId, 'creator');
     return this.mapProfile(result.rows[0]);
@@ -123,7 +167,7 @@ export class CreatorService {
       throw new BadRequestException('Room title is required.');
     }
 
-    const tags = payload.tags?.map((tag) => tag.trim()).filter(Boolean) ?? profile.tags;
+    const tags = this.normalizeTags(payload.tags) ?? profile.tags;
     const existing = await this.findRoomByProfileId(profile.id);
 
     if (existing) {
@@ -204,6 +248,10 @@ export class CreatorService {
       .replace(/^-+|-+$/g, '');
   }
 
+  private normalizeTags(values?: string[]) {
+    return values?.map((value) => value.trim()).filter(Boolean) ?? [];
+  }
+
   private mapProfile(row: CreatorProfileRow): CreatorProfile {
     return {
       id: row.id,
@@ -212,8 +260,22 @@ export class CreatorService {
       slug: row.slug,
       bio: row.bio,
       avatarUrl: row.avatar_url ?? undefined,
+      coverImageUrl: row.cover_image_url ?? undefined,
       accentColor: row.accent_color ?? undefined,
       tags: row.tags ?? [],
+      age: row.age ?? undefined,
+      gender: row.gender ?? undefined,
+      country: row.country ?? undefined,
+      city: row.city ?? undefined,
+      interestedIn: row.interested_in ?? undefined,
+      relationshipStatus: row.relationship_status ?? undefined,
+      bodyType: row.body_type ?? undefined,
+      languages: row.languages ?? [],
+      categories: row.categories ?? [],
+      subcategories: row.subcategories ?? [],
+      instagramUrl: row.instagram_url ?? undefined,
+      xUrl: row.x_url ?? undefined,
+      websiteUrl: row.website_url ?? undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
