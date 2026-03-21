@@ -33,7 +33,7 @@ import { AuthApiService } from './services/auth-api.service';
           </div>
 
           <nav class="topnav">
-            <a routerLink="/">Salas</a>
+            <a routerLink="/" [queryParams]="{ section: 'home' }">Salas</a>
             <a routerLink="/studio">Studio</a>
             <a *ngIf="!authApi.isAuthenticated()" routerLink="/login">Entrar</a>
             <a *ngIf="!authApi.isAuthenticated()" routerLink="/register">Registro</a>
@@ -43,11 +43,11 @@ import { AuthApiService } from './services/auth-api.service';
       </header>
 
       <nav class="section-tabs">
-        <a class="section-tab active" routerLink="/">Home</a>
-        <a class="section-tab" routerLink="/">Discover</a>
-        <a class="section-tab" routerLink="/">Tags</a>
-        <a class="section-tab" routerLink="/">Private Shows</a>
-        <a class="section-tab" routerLink="/">Following</a>
+        <a class="section-tab" routerLink="/" [queryParams]="{ section: 'home' }">Home</a>
+        <a class="section-tab" routerLink="/" [queryParams]="{ section: 'discover' }">Discover</a>
+        <a class="section-tab" routerLink="/" [queryParams]="{ section: 'tags' }">Tags</a>
+        <a class="section-tab" routerLink="/" [queryParams]="{ section: 'private' }">Private Shows</a>
+        <a class="section-tab" routerLink="/" [queryParams]="{ section: 'following' }">Following</a>
       </nav>
 
       <router-outlet />
