@@ -91,7 +91,7 @@ export class StreamsService {
       tags: input.tags ?? [],
       isLive: input.isLive,
       playback: {
-        hlsUrl: `${mediaBaseUrl}/${input.slug}/index.m3u8`,
+        hlsUrl: `${mediaBaseUrl}/live/${input.slug}/index.m3u8`,
         shareUrl: `/streams/${input.slug}`,
       },
       publish: {

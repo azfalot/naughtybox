@@ -1,3 +1,5 @@
+name: naughtybox
+
 # Naughtybox - phase 1 streaming stack
 # Run from repo root: docker compose -f infra/docker/docker-compose.yml up --build
 
@@ -78,7 +80,3 @@ services:
 
 volumes:
   postgres_data:
-
-networks:
-  default:
-    name: naughtybox-net
