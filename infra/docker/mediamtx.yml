@@ -1,17 +1,30 @@
 logLevel: info
 logDestinations: [stdout]
 
+authInternalUsers:
+  - user: any
+    pass:
+    ips: []
+    permissions:
+      - action: publish
+      - action: read
+      - action: playback
+      - action: api
+      - action: metrics
+
 rtmp: true
 rtmpAddress: :1935
+
+api: true
+apiAddress: :9997
 
 hls: true
 hlsAddress: :8888
 hlsAllowOrigins: ['*']
 hlsAlwaysRemux: true
-hlsVariant: lowLatency
+hlsVariant: mpegts
 hlsSegmentCount: 7
 hlsSegmentDuration: 1s
-hlsPartDuration: 200ms
 
 metrics: true
 metricsAddress: :9998

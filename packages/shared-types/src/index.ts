@@ -24,6 +24,7 @@ export interface StreamSummary {
   description: string;
   tags: string[];
   isLive: boolean;
+  currentViewers?: number;
   thumbnailUrl?: string;
   playbackHlsUrl: string;
 }

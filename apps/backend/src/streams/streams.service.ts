@@ -19,7 +19,7 @@ export class StreamsService {
         creatorName: 'Luna Vega',
         description: 'Sala demo para validar el flujo OBS -> MediaMTX -> HLS.',
         tags: ['demo', 'es', 'public'],
-        isLive: true,
+        isLive: false,
       }),
       this.buildStream({
         slug: 'sara-night-show',
@@ -36,28 +36,41 @@ export class StreamsService {
     });
   }
 
-  listStreams(): StreamSummary[] {
-    return [...this.streams.values()].map((stream) => ({
-      id: stream.id,
-      slug: stream.slug,
-      title: stream.title,
-      creatorName: stream.creatorName,
-      description: stream.description,
-      tags: stream.tags,
-      isLive: stream.isLive,
-      thumbnailUrl: stream.thumbnailUrl,
-      playbackHlsUrl: stream.playback.hlsUrl,
-    }));
+  async listStreams(): Promise<StreamSummary[]> {
+    const liveStatusMap = await this.fetchLiveStatus();
+
+    return [...this.streams.values()].map((stream) => {
+      const status = liveStatusMap.get(stream.slug);
+
+      return {
+        id: stream.id,
+        slug: stream.slug,
+        title: stream.title,
+        creatorName: stream.creatorName,
+        description: stream.description,
+        tags: stream.tags,
+        isLive: status?.isLive ?? false,
+        currentViewers: 0,
+        thumbnailUrl: stream.thumbnailUrl,
+        playbackHlsUrl: stream.playback.hlsUrl,
+      };
+    });
   }
 
-  getStream(slug: string): StreamDetails {
+  async getStream(slug: string): Promise<StreamDetails> {
     const stream = this.streams.get(slug);
 
     if (!stream) {
       throw new NotFoundException(`Stream "${slug}" not found.`);
     }
 
-    return stream;
+    const status = (await this.fetchLiveStatus()).get(slug);
+
+    return {
+      ...stream,
+      isLive: status?.isLive ?? false,
+      currentViewers: 0,
+    };
   }
 
   createStream(payload: CreateStreamRequest): StreamDetails {
@@ -68,6 +81,28 @@ export class StreamsService {
 
     this.streams.set(stream.slug, stream);
     return stream;
+  }
+
+  private async fetchLiveStatus(): Promise<Map<string, { isLive: boolean }>> {
+    const mediaInternalBaseUrl = process.env.MEDIA_INTERNAL_BASE_URL ?? 'http://localhost:8888';
+
+    const statuses = await Promise.all(
+      [...this.streams.values()].map(async (stream) => {
+        try {
+          const response = await fetch(`${mediaInternalBaseUrl}/live/${stream.slug}/index.m3u8`, {
+            headers: {
+              Accept: 'application/vnd.apple.mpegurl,text/plain',
+            },
+          });
+
+          return [stream.slug, { isLive: response.ok }] as const;
+        } catch {
+          return [stream.slug, { isLive: false }] as const;
+        }
+      }),
+    );
+
+    return new Map(statuses);
   }
 
   private buildStream(input: {
