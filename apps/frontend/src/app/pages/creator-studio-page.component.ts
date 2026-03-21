@@ -110,7 +110,7 @@ import { WalletApiService } from '../services/wallet-api.service';
           <section class="panel-card" *ngIf="billing() as billing">
             <h2 class="mini-title">Tokens y pagos</h2>
             <p class="muted">
-              La base ya soporta wallet, ledger y propinas. La pasarela adulto-friendly sigue separada para decidirla bien en la siguiente fase.
+              La base ya soporta wallet, ledger y propinas. Ahora mismo todo corre en modo {{ billing.mode }} para validar la plataforma sin pagos reales.
             </p>
             <div class="creator-grid">
               <div>

@@ -115,6 +115,7 @@ export interface PaymentProviderOption {
 }
 
 export interface BillingConfig {
+  mode: 'sandbox' | 'live';
   tokenPackageSizes: number[];
   platformFeePercent: number;
   payoutHoldDays: number;

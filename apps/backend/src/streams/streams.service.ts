@@ -62,6 +62,7 @@ export class StreamsService {
     }>(`SELECT provider_key, status, notes FROM payment_provider_configs ORDER BY provider_key ASC`);
 
     return {
+      mode: 'sandbox',
       tokenPackageSizes: [100, 250, 500, 1000],
       platformFeePercent: 20,
       payoutHoldDays: 14,
