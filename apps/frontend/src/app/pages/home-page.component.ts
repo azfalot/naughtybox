@@ -21,7 +21,7 @@ const VIRTUAL_MODEL_THUMBNAILS: Record<string, string> = {
   standalone: true,
   imports: [CommonModule, RouterLink, StreamPlayerComponent],
   template: `
-    <main class="page">
+    <main class="page page-wide">
       <section class="lobby-header">
         <div>
           <p class="eyebrow">Streaming Lobby</p>

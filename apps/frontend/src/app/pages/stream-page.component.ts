@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { StreamDetails } from '@naughtybox/shared-types';
 import { StreamPlayerComponent } from '../stream-player.component';
+import { AuthApiService } from '../services/auth-api.service';
 import { StreamsApiService } from '../services/streams-api.service';
 
 type VirtualCreatorProfile = {
@@ -30,7 +31,7 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
   standalone: true,
   imports: [CommonModule, RouterLink, StreamPlayerComponent],
   template: `
-    <main class="page">
+    <main class="page page-wide">
       <a class="muted" routerLink="/">← Volver al listado</a>
 
       <section *ngIf="loading()" class="page-state">Cargando stream...</section>
@@ -59,8 +60,8 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
                 <strong>{{ stream()!.isLive ? 'Emitiendo ahora' : 'Sin emision' }}</strong>
               </div>
               <div>
-                <p class="muted stat-label">Acceso</p>
-                <strong>Sala publica</strong>
+                <p class="muted stat-label">Chat</p>
+                <strong>{{ authApi.isAuthenticated() ? 'registrados' : 'login requerido' }}</strong>
               </div>
             </div>
           </div>
@@ -85,7 +86,7 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
           <section class="panel-card chat-panel">
             <div class="chat-header">
               <h2 class="mini-title" style="margin: 0;">Chat en vivo</h2>
-              <span class="muted">beta</span>
+              <span class="muted">{{ authApi.isAuthenticated() ? 'registrados' : 'privado' }}</span>
             </div>
 
             <div class="chat-messages">
@@ -95,15 +96,21 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
               </article>
             </div>
 
-            <form class="chat-form" (submit)="sendMessage($event)">
+            <form *ngIf="authApi.isAuthenticated(); else loginForChat" class="chat-form" (submit)="sendMessage($event)">
               <input
-                #chatInput
                 type="text"
                 name="message"
                 placeholder="Escribe un mensaje..."
               />
               <button type="submit">Enviar</button>
             </form>
+
+            <ng-template #loginForChat>
+              <div class="chat-locked">
+                <p class="muted">El chat queda reservado a usuarios registrados para moderacion, seguridad y futura capa de pagos/tokens.</p>
+                <a class="text-link" routerLink="/login">Entrar para chatear</a>
+              </div>
+            </ng-template>
           </section>
 
           <section class="panel-card">
@@ -133,6 +140,7 @@ const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
 export class StreamPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly streamsApi = inject(StreamsApiService);
+  readonly authApi = inject(AuthApiService);
   private refreshTimer?: ReturnType<typeof setInterval>;
 
   readonly stream = signal<StreamDetails | null>(null);
@@ -182,7 +190,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     }
 
     this.messages.unshift({
-      author: 'Tu',
+      author: this.authApi.user()?.username ?? 'Tu',
       body: input.value.trim(),
     });
     input.value = '';

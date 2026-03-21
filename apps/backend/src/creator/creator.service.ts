@@ -1,0 +1,236 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  CreatorDashboard,
+  CreatorProfile,
+  CreatorRoom,
+  UpsertCreatorProfileRequest,
+  UpsertCreatorRoomRequest,
+} from '@naughtybox/shared-types';
+import { randomUUID } from 'node:crypto';
+import { DatabaseService } from '../database/database.service';
+import { StreamsService } from '../streams/streams.service';
+import { UsersService } from '../users/users.service';
+
+type CreatorProfileRow = {
+  id: string;
+  user_id: string;
+  display_name: string;
+  slug: string;
+  bio: string;
+  avatar_url: string | null;
+  accent_color: string | null;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+type CreatorRoomRow = {
+  id: string;
+  creator_profile_id: string;
+  slug: string;
+  title: string;
+  description: string;
+  tags: string[];
+  stream_key: string;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+@Injectable()
+export class CreatorService {
+  constructor(
+    private readonly database: DatabaseService,
+    private readonly usersService: UsersService,
+    private readonly streamsService: StreamsService,
+  ) {}
+
+  async getDashboard(userId: string): Promise<CreatorDashboard> {
+    const user = await this.usersService.findById(userId);
+    const profile = await this.findProfileByUserId(userId);
+    const room = profile ? await this.findRoomByProfileId(profile.id) : null;
+    const stream = room ? await this.streamsService.getStream(room.slug) : null;
+
+    return { user, profile, room, stream };
+  }
+
+  async upsertProfile(userId: string, payload: UpsertCreatorProfileRequest) {
+    if (!payload.displayName?.trim() || !payload.slug?.trim()) {
+      throw new BadRequestException('Display name and slug are required.');
+    }
+
+    const normalizedSlug = this.normalizeSlug(payload.slug);
+    const tags = payload.tags?.map((tag) => tag.trim()).filter(Boolean) ?? [];
+    const existing = await this.findProfileByUserId(userId);
+
+    if (existing) {
+      const result = await this.database.query<CreatorProfileRow>(
+        `UPDATE creator_profiles
+         SET display_name = $2,
+             slug = $3,
+             bio = $4,
+             avatar_url = $5,
+             accent_color = $6,
+             tags = $7,
+             updated_at = NOW()
+         WHERE user_id = $1
+         RETURNING *`,
+        [
+          userId,
+          payload.displayName.trim(),
+          normalizedSlug,
+          payload.bio?.trim() ?? '',
+          payload.avatarUrl?.trim() || null,
+          payload.accentColor?.trim() || null,
+          tags,
+        ],
+      );
+
+      await this.syncRoomSlug(existing.id, normalizedSlug);
+      await this.usersService.setRole(userId, 'creator');
+      return this.mapProfile(result.rows[0]);
+    }
+
+    const result = await this.database.query<CreatorProfileRow>(
+      `INSERT INTO creator_profiles (
+         id, user_id, display_name, slug, bio, avatar_url, accent_color, tags
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING *`,
+      [
+        randomUUID(),
+        userId,
+        payload.displayName.trim(),
+        normalizedSlug,
+        payload.bio?.trim() ?? '',
+        payload.avatarUrl?.trim() || null,
+        payload.accentColor?.trim() || null,
+        tags,
+      ],
+    );
+
+    await this.usersService.setRole(userId, 'creator');
+    return this.mapProfile(result.rows[0]);
+  }
+
+  async upsertRoom(userId: string, payload: UpsertCreatorRoomRequest) {
+    const profile = await this.findProfileByUserId(userId);
+    if (!profile) {
+      throw new BadRequestException('Create your creator profile before configuring the room.');
+    }
+
+    if (!payload.title?.trim()) {
+      throw new BadRequestException('Room title is required.');
+    }
+
+    const tags = payload.tags?.map((tag) => tag.trim()).filter(Boolean) ?? profile.tags;
+    const existing = await this.findRoomByProfileId(profile.id);
+
+    if (existing) {
+      const result = await this.database.query<CreatorRoomRow>(
+        `UPDATE creator_rooms
+         SET slug = $2,
+             title = $3,
+             description = $4,
+             tags = $5,
+             stream_key = $6,
+             is_public = $7,
+             updated_at = NOW()
+         WHERE creator_profile_id = $1
+         RETURNING *`,
+        [
+          profile.id,
+          profile.slug,
+          payload.title.trim(),
+          payload.description?.trim() ?? '',
+          tags,
+          profile.slug,
+          payload.isPublic ?? true,
+        ],
+      );
+      return this.mapRoom(result.rows[0]);
+    }
+
+    const result = await this.database.query<CreatorRoomRow>(
+      `INSERT INTO creator_rooms (
+         id, creator_profile_id, slug, title, description, tags, stream_key, is_public
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING *`,
+      [
+        randomUUID(),
+        profile.id,
+        profile.slug,
+        payload.title.trim(),
+        payload.description?.trim() ?? '',
+        tags,
+        profile.slug,
+        payload.isPublic ?? true,
+      ],
+    );
+    return this.mapRoom(result.rows[0]);
+  }
+
+  private async findProfileByUserId(userId: string): Promise<CreatorProfile | null> {
+    const result = await this.database.query<CreatorProfileRow>(
+      `SELECT * FROM creator_profiles WHERE user_id = $1 LIMIT 1`,
+      [userId],
+    );
+    return result.rows[0] ? this.mapProfile(result.rows[0]) : null;
+  }
+
+  private async findRoomByProfileId(profileId: string): Promise<CreatorRoom | null> {
+    const result = await this.database.query<CreatorRoomRow>(
+      `SELECT * FROM creator_rooms WHERE creator_profile_id = $1 LIMIT 1`,
+      [profileId],
+    );
+    return result.rows[0] ? this.mapRoom(result.rows[0]) : null;
+  }
+
+  private async syncRoomSlug(profileId: string, slug: string) {
+    await this.database.query(
+      `UPDATE creator_rooms
+       SET slug = $2, stream_key = $2, updated_at = NOW()
+       WHERE creator_profile_id = $1`,
+      [profileId, slug],
+    );
+  }
+
+  private normalizeSlug(value: string) {
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  private mapProfile(row: CreatorProfileRow): CreatorProfile {
+    return {
+      id: row.id,
+      userId: row.user_id,
+      displayName: row.display_name,
+      slug: row.slug,
+      bio: row.bio,
+      avatarUrl: row.avatar_url ?? undefined,
+      accentColor: row.accent_color ?? undefined,
+      tags: row.tags ?? [],
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  private mapRoom(row: CreatorRoomRow): CreatorRoom {
+    return {
+      id: row.id,
+      creatorProfileId: row.creator_profile_id,
+      slug: row.slug,
+      title: row.title,
+      description: row.description,
+      tags: row.tags ?? [],
+      streamKey: row.stream_key,
+      isPublic: row.is_public,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+}

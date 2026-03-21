@@ -4,15 +4,15 @@
 
 :root {
   color-scheme: dark;
-  --bg: #130d1b;
-  --panel: rgba(23, 16, 32, 0.9);
+  --bg: #140917;
+  --panel: rgba(26, 14, 27, 0.92);
   --line: rgba(255, 255, 255, 0.08);
   --text: #f8f4fb;
-  --muted: #b8adca;
-  --accent: #18a89f;
-  --accent-2: #ff8f73;
-  --accent-3: #7cf0db;
-  --live: #ff6b7d;
+  --muted: #c5b4c8;
+  --accent: #ff5b73;
+  --accent-2: #ff936d;
+  --accent-3: #ffcfbf;
+  --live: #ff4367;
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
 }
 
@@ -26,9 +26,9 @@ body {
   font-family: 'Segoe UI', Inter, system-ui, sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at top, rgba(255, 107, 125, 0.14), transparent 18%),
-    radial-gradient(circle at 16% 20%, rgba(24, 168, 159, 0.18), transparent 24%),
-    linear-gradient(180deg, #130d1b 0%, #090611 100%);
+    radial-gradient(circle at top, rgba(255, 91, 115, 0.16), transparent 18%),
+    radial-gradient(circle at 18% 18%, rgba(255, 147, 109, 0.12), transparent 22%),
+    linear-gradient(180deg, #140917 0%, #09040d 100%);
 }
 
 a {
@@ -89,7 +89,7 @@ input {
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  border: 1px solid rgba(124, 240, 219, 0.16);
+  border: 1px solid rgba(255, 147, 109, 0.18);
   background: linear-gradient(145deg, rgba(31, 23, 47, 0.95), rgba(10, 7, 16, 0.92));
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   transition: transform 280ms ease;
@@ -121,12 +121,12 @@ input {
     radial-gradient(circle, var(--accent-2) 0 23%, transparent 24%) 0 0 / 10px 10px,
     radial-gradient(circle, var(--accent) 0 23%, transparent 24%) 12px 0 / 10px 10px,
     radial-gradient(circle, #ffd8d0 0 23%, transparent 24%) 0 12px / 10px 10px,
-    radial-gradient(circle, rgba(124, 240, 219, 0.85) 0 23%, transparent 24%) 12px 12px / 10px 10px;
+    radial-gradient(circle, rgba(255, 91, 115, 0.85) 0 23%, transparent 24%) 12px 12px / 10px 10px;
 }
 
 .brand-mark-room .brand-module {
   border-radius: 7px;
-  background: linear-gradient(180deg, rgba(255, 143, 115, 0.96), rgba(24, 168, 159, 0.78));
+  background: linear-gradient(180deg, rgba(255, 147, 109, 0.96), rgba(255, 91, 115, 0.78));
 }
 
 .brand-mark-room .brand-module::after {
@@ -139,7 +139,7 @@ input {
 
 .brand-mark-system .brand-module {
   border-radius: 50%;
-  border: 3px solid rgba(124, 240, 219, 0.92);
+  border: 3px solid rgba(255, 207, 191, 0.92);
 }
 
 .brand-mark-system .brand-module::after {
@@ -150,7 +150,7 @@ input {
   width: 3px;
   height: 18px;
   transform: translateX(-50%);
-  background: rgba(124, 240, 219, 0.92);
+  background: rgba(255, 207, 191, 0.92);
 }
 
 .topnav {
@@ -163,6 +163,11 @@ input {
   max-width: 1240px;
   margin: 0 auto;
   padding: 24px 24px 80px;
+}
+
+.page-wide {
+  max-width: none;
+  width: 100%;
 }
 
 .panel-card {
@@ -242,8 +247,8 @@ input {
 
 .stream-card-link:hover {
   transform: translateY(-2px);
-  border-color: rgba(124, 240, 219, 0.28);
-  background: rgba(28, 20, 40, 0.98);
+  border-color: rgba(255, 147, 109, 0.25);
+  background: rgba(33, 16, 28, 0.98);
 }
 
 .stream-thumb {
@@ -314,7 +319,7 @@ input {
 }
 
 .badge-demo {
-  background: rgba(124, 240, 219, 0.16);
+  background: rgba(255, 207, 191, 0.14);
   color: var(--accent-3);
 }
 
@@ -395,7 +400,7 @@ input {
 }
 
 .metric-icon {
-  color: var(--accent-3);
+  color: #ffd8d0;
   font-size: 0.92rem;
   line-height: 1;
   font-weight: 700;
@@ -427,7 +432,7 @@ input {
   inset: 0;
   background:
     linear-gradient(180deg, rgba(8, 6, 14, 0.08), transparent 40%, rgba(8, 6, 14, 0.72)),
-    radial-gradient(circle at 70% 18%, rgba(24, 168, 159, 0.16), transparent 28%);
+    radial-gradient(circle at 70% 18%, rgba(255, 147, 109, 0.16), transparent 28%);
 }
 
 .mock-preview-copy {
@@ -586,10 +591,126 @@ input {
   border: 0;
   border-radius: 14px;
   padding: 12px 16px;
-  background: linear-gradient(135deg, var(--accent), #0d6f71);
+  background: linear-gradient(135deg, var(--accent), #c73b59);
   color: white;
   font-weight: 700;
   cursor: pointer;
+}
+
+.chat-locked,
+.auth-shell,
+.studio-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-page {
+  max-width: 760px;
+}
+
+.auth-shell,
+.studio-empty {
+  padding: 28px;
+}
+
+.auth-form,
+.studio-form {
+  display: grid;
+  gap: 14px;
+}
+
+.studio-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.studio-span {
+  grid-column: 1 / -1;
+}
+
+.auth-form label,
+.studio-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-form span,
+.studio-form span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.auth-form input,
+.studio-form input,
+.studio-form textarea {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.studio-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.auth-form button,
+.studio-form button,
+.text-link {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, var(--accent), #c73b59);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-link {
+  width: fit-content;
+  text-decoration: none;
+}
+
+.auth-switch,
+.studio-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.studio-layout {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 0.95fr);
+}
+
+.studio-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.studio-notice,
+.form-error {
+  padding: 12px 14px;
+  border-radius: 14px;
+  margin: 0;
+}
+
+.studio-notice {
+  background: rgba(255, 147, 109, 0.12);
+  color: #ffd2c6;
+}
+
+.form-error {
+  background: rgba(255, 67, 103, 0.14);
+  color: #ffb7c4;
 }
 
 .site-footer {
@@ -610,6 +731,10 @@ input {
 
 @media (max-width: 900px) {
   .stream-layout,
+  .studio-layout {
+    grid-template-columns: 1fr;
+  }
+
   .lobby-header,
   .site-footer {
     flex-direction: column;
@@ -640,6 +765,10 @@ input {
 
   .stream-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .studio-form {
+    grid-template-columns: 1fr;
   }
 
   .creator-profile {
