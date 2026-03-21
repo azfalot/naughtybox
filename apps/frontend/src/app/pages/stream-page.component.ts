@@ -5,6 +5,26 @@ import { StreamDetails } from '@naughtybox/shared-types';
 import { StreamPlayerComponent } from '../stream-player.component';
 import { StreamsApiService } from '../services/streams-api.service';
 
+type VirtualCreatorProfile = {
+  avatar: string;
+  headline: string;
+  bio: string;
+};
+
+const DEFAULT_PROFILE: VirtualCreatorProfile = {
+  avatar: '/assets/models/sara-bloom.svg',
+  headline: 'Creator-first live room',
+  bio: 'Perfil virtual de referencia para validar branding, tono visual y estructura de la sala.',
+};
+
+const VIRTUAL_CREATOR_PROFILES: Record<string, VirtualCreatorProfile> = {
+  'sara-night-show': {
+    avatar: '/assets/models/sara-bloom.svg',
+    headline: 'Streaming nocturno premium',
+    bio: 'Sara Bloom es una creadora virtual ficticia pensada para validar la identidad visual de Naughtybox: cercana, elegante y claramente adulta.',
+  },
+};
+
 @Component({
   selector: 'app-stream-page',
   standalone: true,
@@ -47,10 +67,17 @@ import { StreamsApiService } from '../services/streams-api.service';
 
           <section class="panel-card" style="margin-top: 18px;">
             <h2 class="mini-title">Sobre la creadora</h2>
-            <p class="muted">
-              Perfil demo de fase 1. Aqui iremos mostrando bio, categorias, reglas de sala,
-              objetivos y accesos a suscripcion cuando pasemos a las siguientes fases.
-            </p>
+            <div class="creator-profile">
+              <img
+                class="creator-avatar"
+                [src]="creatorProfile().avatar"
+                [alt]="'Avatar virtual de ' + stream()!.creatorName"
+              />
+              <div>
+                <strong>{{ creatorProfile().headline }}</strong>
+                <p class="muted">{{ creatorProfile().bio }}</p>
+              </div>
+            </div>
           </section>
         </div>
 
@@ -111,6 +138,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   readonly stream = signal<StreamDetails | null>(null);
   readonly loading = signal(true);
   readonly error = signal('');
+  readonly creatorProfile = signal<VirtualCreatorProfile>(DEFAULT_PROFILE);
   readonly messages = [
     { author: 'Naughtybox', body: 'Chat demo listo para la siguiente fase.' },
     { author: 'Lucas', body: 'La sala ya se siente mucho mas a producto.' },
@@ -154,7 +182,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     }
 
     this.messages.unshift({
-      author: 'Tú',
+      author: 'Tu',
       body: input.value.trim(),
     });
     input.value = '';
@@ -167,6 +195,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
 
     const stream = await this.streamsApi.getStream(slug);
     this.stream.set(stream);
+    this.creatorProfile.set(VIRTUAL_CREATOR_PROFILES[slug] ?? DEFAULT_PROFILE);
     this.error.set('');
 
     if (showLoader) {

@@ -9,7 +9,12 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
     <div class="app-shell">
       <header class="topbar">
         <a class="brand" routerLink="/">
-          <span class="brand-mark" [class.brand-mark-grid]="activeModule() === 'grid'" [class.brand-mark-room]="activeModule() === 'room'" [class.brand-mark-system]="activeModule() === 'system'">
+          <span
+            class="brand-mark"
+            [class.brand-mark-grid]="activeModule() === 'grid'"
+            [class.brand-mark-room]="activeModule() === 'room'"
+            [class.brand-mark-system]="activeModule() === 'system'"
+          >
             <span class="brand-module"></span>
           </span>
 
