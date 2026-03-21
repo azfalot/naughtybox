@@ -1,0 +1,23 @@
+logLevel: info
+logDestinations: [stdout]
+
+rtmp: true
+rtmpAddress: :1935
+
+hls: true
+hlsAddress: :8888
+hlsAllowOrigins: ['*']
+hlsAlwaysRemux: true
+hlsVariant: lowLatency
+hlsSegmentCount: 7
+hlsSegmentDuration: 1s
+hlsPartDuration: 200ms
+
+metrics: true
+metricsAddress: :9998
+
+pathDefaults:
+  source: publisher
+
+paths:
+  all_others:

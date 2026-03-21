@@ -1,0 +1,9 @@
+.git
+.gitignore
+node_modules
+apps/*/node_modules
+apps/*/dist
+apps/*/.angular
+packages/*/dist
+infra/docker/*.log
+**/*.tsbuildinfo

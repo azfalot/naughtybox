@@ -1,31 +1,40 @@
-We are building a realtime streaming platform MVP.
+We are building phase 1 of Naughtybox as a public streaming MVP.
 
 Architecture:
 
 Monorepo.
 
 apps:
-- backend (NestJS)
-- streaming (Mediasoup)
-- frontend (Angular + PrimeNG)
+- backend (NestJS API for health and stream metadata)
+- frontend (Angular app for discovery and playback)
+- streaming (reserved for future real-time/private features)
 
 Infrastructure:
-Docker
-Nginx
-PostgreSQL
-Redis
-Coturn
+- Docker Compose
+- MediaMTX
+- PostgreSQL
+- Redis
+- Nginx
 
-Features:
+Phase 1 features:
 
-Users can register and login.
+- Public stream rooms
+- OBS publishing through RTMP
+- Browser playback through HLS
+- Simple room catalog
+- Dockerized local environment
 
-Streamers can start a stream using OBS.
+Current phase 1 goal:
 
-Viewers can watch the stream in browser.
+Validate the full streaming loop:
 
-Streaming is handled by mediasoup.
+1. create or use a room
+2. publish with OBS
+3. watch from the browser
 
-All services must run using docker-compose.
+Do not over-engineer:
 
-Code must be modular and production ready.
+- no payments yet
+- no private shows yet
+- no subscriptions yet
+- no persistence yet for stream metadata

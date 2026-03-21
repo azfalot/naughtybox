@@ -1,49 +1,65 @@
 # Naughtybox
 
-Realtime streaming platform MVP (monorepo).
+Phase 1 MVP for a modern live streaming platform.
 
-## Structure
+## Scope of phase 1
 
+- Public live rooms
+- OBS publishing through RTMP
+- HLS playback in the browser
+- NestJS backend for room metadata and health checks
+- Angular frontend for room discovery and playback
+- Docker Compose stack for local validation
+
+## Stack
+
+- `apps/backend`: NestJS API
+- `apps/frontend`: Angular 17 + Tailwind
+- `apps/streaming`: reserved for future low-latency features
+- `infra/docker`: Docker Compose + MediaMTX
+- `infra/nginx`: reverse proxy reference
+- `packages/shared-types`: contracts shared across apps
+
+## Local phase 1 architecture
+
+```text
+OBS -> RTMP -> MediaMTX -> HLS -> Browser
+              |
+              +-> Backend exposes room metadata and OBS instructions
 ```
-apps/
-  backend/     # NestJS API (auth, users, stream metadata)
-  streaming/   # Mediasoup WebRTC server
-  frontend/    # Angular + PrimeNG + Tailwind
-packages/
-  shared-types/   # Types shared across apps
-  shared-configs/ # ESLint, TSConfig bases
-infra/
-  docker/      # Dockerfiles, docker-compose (PostgreSQL, Redis, Coturn)
-  nginx/       # Nginx config (reverse proxy, static frontend)
+
+## Run the stack
+
+```bash
+docker compose -f infra/docker/docker-compose.yml up --build
 ```
 
-## Setup
+Services:
 
-1. Install dependencies (from repo root):
+- Frontend: `http://localhost:4200`
+- Backend API: `http://localhost:3000`
+- Media server HLS: `http://localhost:8888`
+- MediaMTX metrics: `http://localhost:9998`
+- RTMP ingest for OBS: `rtmp://localhost:1935/live`
 
-   ```bash
-   npm install
-   ```
+## Test with OBS
 
-2. Run infrastructure:
+Use one of the seeded stream keys exposed by the API:
 
-   ```bash
-   docker compose -f infra/docker/docker-compose.yml up -d
-   ```
+- `luna-en-directo`
+- `sara-night-show`
 
-3. Run apps (dev):
+In OBS:
 
-   ```bash
-   npm run backend:dev
-   npm run streaming:dev
-   npm run frontend:dev
-   ```
+- Server: `rtmp://localhost:1935/live`
+- Stream key: one of the slugs above
 
-## Tech stack
+Then open the matching room in the frontend:
 
-- **Backend:** NestJS, PostgreSQL, Redis
-- **Streaming:** Mediasoup, Coturn (TURN/STUN)
-- **Frontend:** Angular 17, PrimeNG, Tailwind
-- **Infra:** Docker, Nginx
+- `http://localhost:4200/streams/luna-en-directo`
+- `http://localhost:4200/streams/sara-night-show`
 
-See `PROJECT_CONTEXT.md` and `CURSOR_RULES.md` for architecture and conventions.
+## Notes
+
+- PostgreSQL and Redis are already in the stack for upcoming phases, but phase 1 still uses in-memory room metadata.
+- MediaMTX replaces mediasoup for public broadcast in this MVP track.

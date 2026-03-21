@@ -15,3 +15,39 @@ export interface StreamSession {
   startedAt: string;
   endedAt?: string;
 }
+
+export interface StreamSummary {
+  id: string;
+  slug: string;
+  title: string;
+  creatorName: string;
+  description: string;
+  tags: string[];
+  isLive: boolean;
+  thumbnailUrl?: string;
+  playbackHlsUrl: string;
+}
+
+export interface StreamPlayback {
+  hlsUrl: string;
+  shareUrl: string;
+}
+
+export interface StreamPublish {
+  rtmpUrl: string;
+  streamKey: string;
+  obsServer: string;
+}
+
+export interface StreamDetails extends Omit<StreamSummary, 'playbackHlsUrl'> {
+  playback: StreamPlayback;
+  publish: StreamPublish;
+}
+
+export interface CreateStreamRequest {
+  slug: string;
+  title: string;
+  creatorName: string;
+  description?: string;
+  tags?: string[];
+}
