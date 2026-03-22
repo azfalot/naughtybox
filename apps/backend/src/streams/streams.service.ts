@@ -33,6 +33,7 @@ type StreamRow = {
   subcategories: string[];
   instagram_url: string | null;
   x_url: string | null;
+  onlyfans_url: string | null;
   website_url: string | null;
 };
 
@@ -83,6 +84,7 @@ export class StreamsService {
         profiles.subcategories,
         profiles.instagram_url,
         profiles.x_url,
+        profiles.onlyfans_url,
         profiles.website_url
       FROM creator_rooms rooms
       INNER JOIN creator_profiles profiles ON profiles.id = rooms.creator_profile_id
@@ -156,6 +158,7 @@ export class StreamsService {
         profiles.subcategories,
         profiles.instagram_url,
         profiles.x_url,
+        profiles.onlyfans_url,
         profiles.website_url
       FROM creator_rooms rooms
       INNER JOIN creator_profiles profiles ON profiles.id = rooms.creator_profile_id
@@ -253,6 +256,7 @@ export class StreamsService {
       subcategories: row.subcategories ?? [],
       instagramUrl: row.instagram_url ?? undefined,
       xUrl: row.x_url ?? undefined,
+      onlyFansUrl: row.onlyfans_url ?? undefined,
       websiteUrl: row.website_url ?? undefined,
     };
   }

@@ -619,6 +619,17 @@ button {
   max-width: 60ch;
 }
 
+.profile-hero-copy-tight {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile-hero-bio {
+  margin: 0;
+  max-width: 56ch;
+}
+
 .profile-hero-copy h2 {
   margin: 0;
   font-size: 2rem;
@@ -687,10 +698,15 @@ button {
   flex-wrap: wrap;
 }
 
+.social-links-grid-tight {
+  gap: 8px;
+}
+
 .social-link-card {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-width: 120px;
   min-height: 42px;
   padding: 0 14px;
@@ -698,6 +714,28 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   color: var(--accent-3);
+}
+
+.social-link-card-mini {
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 0.8rem;
+}
+
+.social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 138, 61, 0.18);
+  color: var(--accent-3);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
 .media-strip {
@@ -748,6 +786,17 @@ button {
   gap: 12px;
 }
 
+.room-summary-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.room-kicker {
+  margin: 0;
+}
+
 .room-summary-head h1,
 .mini-title {
   margin: 0;
@@ -758,6 +807,10 @@ button {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.room-status-pills-compact {
+  justify-content: flex-end;
 }
 
 .room-bio {
@@ -890,6 +943,29 @@ button {
   align-items: center;
   justify-content: center;
   width: fit-content;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.action-button-ghost {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--accent-3);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.action-button-warn {
+  background: linear-gradient(135deg, rgba(255, 138, 61, 0.94), rgba(255, 174, 92, 0.9));
+  color: #102022;
 }
 
 .icon-button {

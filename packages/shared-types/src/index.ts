@@ -50,6 +50,7 @@ export interface CreatorProfile {
   subcategories: string[];
   instagramUrl?: string;
   xUrl?: string;
+  onlyFansUrl?: string;
   websiteUrl?: string;
   createdAt: string;
   updatedAt: string;
@@ -74,6 +75,7 @@ export interface CreatorPublicProfile {
   subcategories: string[];
   instagramUrl?: string;
   xUrl?: string;
+  onlyFansUrl?: string;
   websiteUrl?: string;
 }
 
@@ -188,6 +190,7 @@ export interface UpsertCreatorProfileRequest {
   subcategories?: string[];
   instagramUrl?: string;
   xUrl?: string;
+  onlyFansUrl?: string;
   websiteUrl?: string;
 }
 

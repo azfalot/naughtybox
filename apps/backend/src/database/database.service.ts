@@ -59,6 +59,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories TEXT[] NOT NULL DEFAULT '{}',
         instagram_url TEXT,
         x_url TEXT,
+        onlyfans_url TEXT,
         website_url TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -147,6 +148,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS subcategories TEXT[] NOT NULL DEFAULT '{}';
       ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS instagram_url TEXT;
       ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS x_url TEXT;
+      ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS onlyfans_url TEXT;
       ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS website_url TEXT;
       ALTER TABLE creator_rooms ADD COLUMN IF NOT EXISTS access_mode TEXT NOT NULL DEFAULT 'public';
       ALTER TABLE creator_rooms ADD COLUMN IF NOT EXISTS chat_mode TEXT NOT NULL DEFAULT 'registered';
@@ -182,6 +184,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories: ['fetish', 'toys', 'private-shows', 'games'],
         instagramUrl: 'https://instagram.com/lucia.velvet.demo',
         xUrl: 'https://x.com/luciavelvetdemo',
+        onlyFansUrl: 'https://onlyfans.com/luciavelvetdemo',
         websiteUrl: 'https://naughtybox.local/lucia-velvet',
       },
       {
@@ -207,6 +210,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories: ['chat', 'games', 'new'],
         instagramUrl: 'https://instagram.com/luna.demo',
         xUrl: 'https://x.com/luna_demo',
+        onlyFansUrl: null,
         websiteUrl: 'https://naughtybox.local/luna',
       },
       {
@@ -232,6 +236,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories: ['afterhours', 'fetish', 'private-shows'],
         instagramUrl: 'https://instagram.com/jade.demo',
         xUrl: 'https://x.com/jade_demo',
+        onlyFansUrl: null,
         websiteUrl: 'https://naughtybox.local/jade',
       },
       {
@@ -257,6 +262,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories: ['beach', 'travel', 'chat'],
         instagramUrl: 'https://instagram.com/maya.demo',
         xUrl: 'https://x.com/maya_demo',
+        onlyFansUrl: null,
         websiteUrl: 'https://naughtybox.local/maya',
       },
       {
@@ -282,6 +288,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories: ['premium', 'lingerie', 'private-shows'],
         instagramUrl: 'https://instagram.com/sofia.demo',
         xUrl: 'https://x.com/sofia_demo',
+        onlyFansUrl: 'https://onlyfans.com/sofiavelvetdemo',
         websiteUrl: 'https://naughtybox.local/sofia',
       },
       {
@@ -307,6 +314,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories: ['fitness', 'chat', 'private-shows'],
         instagramUrl: 'https://instagram.com/alex.demo',
         xUrl: 'https://x.com/alex_demo',
+        onlyFansUrl: null,
         websiteUrl: 'https://naughtybox.local/alex',
       },
       {
@@ -332,6 +340,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories: ['new', 'games', 'public'],
         instagramUrl: 'https://instagram.com/marco.demo',
         xUrl: 'https://x.com/marco_demo',
+        onlyFansUrl: null,
         websiteUrl: 'https://naughtybox.local/marco',
       },
       {
@@ -357,6 +366,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories: ['vip', 'chat', 'private-shows'],
         instagramUrl: 'https://instagram.com/diego.demo',
         xUrl: 'https://x.com/diego_demo',
+        onlyFansUrl: null,
         websiteUrl: 'https://naughtybox.local/diego',
       },
       {
@@ -382,6 +392,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories: ['private-shows', 'games', 'toys'],
         instagramUrl: 'https://instagram.com/almanoah.demo',
         xUrl: 'https://x.com/almanoah_demo',
+        onlyFansUrl: null,
         websiteUrl: 'https://naughtybox.local/alma-noah',
       },
       {
@@ -407,6 +418,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         subcategories: ['premium', 'travel', 'private-shows'],
         instagramUrl: 'https://instagram.com/leoiris.demo',
         xUrl: 'https://x.com/leoiris_demo',
+        onlyFansUrl: null,
         websiteUrl: 'https://naughtybox.local/leo-iris',
       },
     ] as const;
@@ -501,12 +513,12 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       `INSERT INTO creator_profiles (
          id, user_id, display_name, slug, bio, avatar_url, cover_image_url, accent_color, tags,
          age, gender, country, city, interested_in, relationship_status, body_type,
-         languages, categories, subcategories, instagram_url, x_url, website_url
+         languages, categories, subcategories, instagram_url, x_url, onlyfans_url, website_url
        )
        VALUES (
          $1, $2, $3, $4, $5, NULL, $6, $7, $8,
          $9, $10, $11, $12, $13, $14, $15,
-         $16, $17, $18, $19, $20, $21
+         $16, $17, $18, $19, $20, $21, $22
        )
        ON CONFLICT (user_id)
        DO UPDATE SET
@@ -528,6 +540,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
          subcategories = EXCLUDED.subcategories,
          instagram_url = EXCLUDED.instagram_url,
          x_url = EXCLUDED.x_url,
+         onlyfans_url = EXCLUDED.onlyfans_url,
          website_url = EXCLUDED.website_url,
          updated_at = NOW()`,
       [
@@ -551,6 +564,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         creator.subcategories,
         creator.instagramUrl,
         creator.xUrl,
+        creator.onlyFansUrl,
         creator.websiteUrl,
       ],
     );

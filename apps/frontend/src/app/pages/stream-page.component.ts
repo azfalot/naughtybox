@@ -62,15 +62,18 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
 
           <section class="panel-card room-summary room-summary-page">
             <div class="room-summary-head">
-              <div>
+              <div class="room-summary-copy">
                 <h1>{{ stream()!.title }}</h1>
-                <p class="muted">{{ stream()!.creatorName }} · {{ stream()!.description }}</p>
+                <p class="muted room-kicker">{{ stream()!.creatorName }} · {{ stream()!.description }}</p>
               </div>
-              <div class="room-status-pills">
+              <div class="room-status-pills room-status-pills-compact">
                 <span [class]="stream()!.isLive ? 'badge-live' : 'badge-offline'">{{ stream()!.isLive ? 'En directo' : 'Offline' }}</span>
                 <span class="viewer-pill">{{ stream()!.currentViewers || 0 }} viendo</span>
                 <span class="viewer-pill">{{ stream()!.accessMode || 'public' }}</span>
-                <a class="text-link" routerLink="/legal/18plus">Reportar</a>
+                <button type="button" class="action-button action-button-ghost" (click)="toggleFollow()">
+                  {{ stream()!.following ? 'Siguiendo' : 'Seguir' }}
+                </button>
+                <a class="action-button action-button-warn" routerLink="/legal/18plus">Reportar</a>
               </div>
             </div>
 
@@ -91,10 +94,16 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
           </section>
 
           <section class="panel-card profile-hero" [style.background]="coverStyle()">
-            <div class="profile-hero-copy">
+            <div class="profile-hero-copy profile-hero-copy-tight">
               <p class="eyebrow">Perfil</p>
               <h2>{{ publicProfile().displayName }}</h2>
-              <p class="muted">{{ publicProfile().bio }}</p>
+              <p class="muted profile-hero-bio">{{ publicProfile().bio }}</p>
+              <div class="social-links-grid social-links-grid-tight" *ngIf="hasSocialLinks()">
+                <a *ngIf="publicProfile().instagramUrl" class="social-link-card social-link-card-mini" [href]="publicProfile().instagramUrl" target="_blank" rel="noreferrer"><span class="social-icon">IG</span><span>Instagram</span></a>
+                <a *ngIf="publicProfile().xUrl" class="social-link-card social-link-card-mini" [href]="publicProfile().xUrl" target="_blank" rel="noreferrer"><span class="social-icon">X</span><span>X</span></a>
+                <a *ngIf="publicProfile().onlyFansUrl" class="social-link-card social-link-card-mini" [href]="publicProfile().onlyFansUrl" target="_blank" rel="noreferrer"><span class="social-icon">OF</span><span>OnlyFans</span></a>
+                <a *ngIf="publicProfile().websiteUrl" class="social-link-card social-link-card-mini" [href]="publicProfile().websiteUrl" target="_blank" rel="noreferrer"><span class="social-icon">WEB</span><span>Web</span></a>
+              </div>
             </div>
 
             <div class="profile-stats">
@@ -130,14 +139,15 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
             </div>
           </section>
 
-          <section class="panel-card profile-section">
+          <section class="panel-card profile-section" *ngIf="hasSocialLinks()">
             <div class="profile-section-header">
               <h3 class="mini-title">Redes y enlaces</h3>
             </div>
             <div class="social-links-grid">
-              <a *ngIf="publicProfile().instagramUrl" class="social-link-card" [href]="publicProfile().instagramUrl" target="_blank" rel="noreferrer">Instagram</a>
-              <a *ngIf="publicProfile().xUrl" class="social-link-card" [href]="publicProfile().xUrl" target="_blank" rel="noreferrer">X</a>
-              <a *ngIf="publicProfile().websiteUrl" class="social-link-card" [href]="publicProfile().websiteUrl" target="_blank" rel="noreferrer">Website</a>
+              <a *ngIf="publicProfile().instagramUrl" class="social-link-card" [href]="publicProfile().instagramUrl" target="_blank" rel="noreferrer"><span class="social-icon">IG</span><span>Instagram</span></a>
+              <a *ngIf="publicProfile().xUrl" class="social-link-card" [href]="publicProfile().xUrl" target="_blank" rel="noreferrer"><span class="social-icon">X</span><span>X</span></a>
+              <a *ngIf="publicProfile().onlyFansUrl" class="social-link-card" [href]="publicProfile().onlyFansUrl" target="_blank" rel="noreferrer"><span class="social-icon">OF</span><span>OnlyFans</span></a>
+              <a *ngIf="publicProfile().websiteUrl" class="social-link-card" [href]="publicProfile().websiteUrl" target="_blank" rel="noreferrer"><span class="social-icon">WEB</span><span>Website</span></a>
             </div>
           </section>
 
@@ -346,6 +356,15 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     ];
   }
 
+  hasSocialLinks() {
+    return Boolean(
+      this.publicProfile().instagramUrl ||
+      this.publicProfile().xUrl ||
+      this.publicProfile().onlyFansUrl ||
+      this.publicProfile().websiteUrl,
+    );
+  }
+
   async sendMessage(event: Event) {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
@@ -378,6 +397,25 @@ export class StreamPageComponent implements OnInit, OnDestroy {
       this.notice.set(`Propina enviada: ${amount} tokens.`);
     } catch (error) {
       this.notice.set(error instanceof Error ? error.message : 'No se pudo enviar la propina.');
+    }
+  }
+
+  async toggleFollow() {
+    if (!this.stream()) {
+      return;
+    }
+
+    if (!this.authApi.isAuthenticated()) {
+      this.notice.set('Entra con tu cuenta para seguir a este creador.');
+      return;
+    }
+
+    try {
+      const result = await this.streamsApi.toggleFollow(this.stream()!.slug);
+      this.stream.update((current) => (current ? { ...current, following: result.following } : current));
+      this.notice.set(result.following ? 'Ahora sigues a este creador.' : 'Has dejado de seguir a este creador.');
+    } catch (error) {
+      this.notice.set(error instanceof Error ? error.message : 'No se pudo actualizar el follow.');
     }
   }
 

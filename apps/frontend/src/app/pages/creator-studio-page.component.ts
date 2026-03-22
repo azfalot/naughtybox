@@ -110,6 +110,10 @@ import { WalletApiService } from '../services/wallet-api.service';
                 <input name="xUrl" [value]="dashboard()?.profile?.xUrl ?? ''" />
               </label>
               <label>
+                <span>OnlyFans</span>
+                <input name="onlyFansUrl" [value]="dashboard()?.profile?.onlyFansUrl ?? ''" />
+              </label>
+              <label>
                 <span>Website</span>
                 <input name="websiteUrl" [value]="dashboard()?.profile?.websiteUrl ?? ''" />
               </label>
@@ -310,6 +314,7 @@ export class CreatorStudioPageComponent implements OnInit {
         subcategories: this.splitTags((form.elements.namedItem('subcategories') as HTMLInputElement)?.value ?? ''),
         instagramUrl: (form.elements.namedItem('instagramUrl') as HTMLInputElement)?.value ?? '',
         xUrl: (form.elements.namedItem('xUrl') as HTMLInputElement)?.value ?? '',
+        onlyFansUrl: (form.elements.namedItem('onlyFansUrl') as HTMLInputElement)?.value ?? '',
         websiteUrl: (form.elements.namedItem('websiteUrl') as HTMLInputElement)?.value ?? '',
       });
       await this.loadDashboard();

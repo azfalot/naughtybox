@@ -33,6 +33,7 @@ type CreatorProfileRow = {
   subcategories: string[];
   instagram_url: string | null;
   x_url: string | null;
+  onlyfans_url: string | null;
   website_url: string | null;
   created_at: string;
   updated_at: string;
@@ -105,6 +106,7 @@ export class CreatorService {
       subcategories,
       payload.instagramUrl?.trim() || null,
       payload.xUrl?.trim() || null,
+      payload.onlyFansUrl?.trim() || null,
       payload.websiteUrl?.trim() || null,
     ];
 
@@ -130,7 +132,8 @@ export class CreatorService {
              subcategories = $18,
              instagram_url = $19,
              x_url = $20,
-             website_url = $21,
+             onlyfans_url = $21,
+             website_url = $22,
              updated_at = NOW()
          WHERE user_id = $1
          RETURNING *`,
@@ -146,15 +149,15 @@ export class CreatorService {
       `INSERT INTO creator_profiles (
          id, user_id, display_name, slug, bio, avatar_url, cover_image_url, accent_color, tags,
          age, gender, country, city, interested_in, relationship_status, body_type,
-         languages, categories, subcategories, instagram_url, x_url, website_url
+         languages, categories, subcategories, instagram_url, x_url, onlyfans_url, website_url
        )
        VALUES (
-         $22, $1, $2, $3, $4, $5, $6, $7, $8,
+         $23, $1, $2, $3, $4, $5, $6, $7, $8,
          $9, $10, $11, $12, $13, $14, $15,
-         $16, $17, $18, $19, $20, $21
+         $16, $17, $18, $19, $20, $21, $22
        )
        RETURNING *`,
-        [...values, randomUUID()],
+        [randomUUID(), ...values],
       );
 
     await this.usersService.setRole(userId, 'creator');
@@ -292,6 +295,7 @@ export class CreatorService {
       subcategories: row.subcategories ?? [],
       instagramUrl: row.instagram_url ?? undefined,
       xUrl: row.x_url ?? undefined,
+      onlyFansUrl: row.onlyfans_url ?? undefined,
       websiteUrl: row.website_url ?? undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
