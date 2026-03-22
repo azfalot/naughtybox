@@ -73,6 +73,10 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         tags TEXT[] NOT NULL DEFAULT '{}',
         stream_key TEXT NOT NULL UNIQUE,
         is_public BOOLEAN NOT NULL DEFAULT TRUE,
+        access_mode TEXT NOT NULL DEFAULT 'public',
+        chat_mode TEXT NOT NULL DEFAULT 'registered',
+        private_entry_tokens INTEGER NOT NULL DEFAULT 120,
+        member_monthly_tokens INTEGER NOT NULL DEFAULT 450,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
@@ -112,6 +116,15 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         PRIMARY KEY (user_id, creator_profile_id)
       );
 
+      CREATE TABLE IF NOT EXISTS room_access_grants (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        room_slug TEXT NOT NULL,
+        grant_type TEXT NOT NULL,
+        expires_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
       CREATE TABLE IF NOT EXISTS payment_provider_configs (
         id TEXT PRIMARY KEY,
         provider_key TEXT NOT NULL UNIQUE,
@@ -135,6 +148,10 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS instagram_url TEXT;
       ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS x_url TEXT;
       ALTER TABLE creator_profiles ADD COLUMN IF NOT EXISTS website_url TEXT;
+      ALTER TABLE creator_rooms ADD COLUMN IF NOT EXISTS access_mode TEXT NOT NULL DEFAULT 'public';
+      ALTER TABLE creator_rooms ADD COLUMN IF NOT EXISTS chat_mode TEXT NOT NULL DEFAULT 'registered';
+      ALTER TABLE creator_rooms ADD COLUMN IF NOT EXISTS private_entry_tokens INTEGER NOT NULL DEFAULT 120;
+      ALTER TABLE creator_rooms ADD COLUMN IF NOT EXISTS member_monthly_tokens INTEGER NOT NULL DEFAULT 450;
     `);
 
     this.logger.log('Database schema ready.');
@@ -542,9 +559,19 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async ensureCreatorRoom(profileId: string, creator: any) {
+    const accessMode = creator.tags.includes('private-shows') || creator.tags.includes('tokens')
+      ? 'private'
+      : creator.tags.includes('vip') || creator.tags.includes('premium')
+        ? 'premium'
+        : 'public';
+    const chatMode = accessMode === 'public' ? 'registered' : 'members';
+
     await this.query(
-      `INSERT INTO creator_rooms (id, creator_profile_id, slug, title, description, tags, stream_key, is_public)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE)
+      `INSERT INTO creator_rooms (
+         id, creator_profile_id, slug, title, description, tags, stream_key, is_public,
+         access_mode, chat_mode, private_entry_tokens, member_monthly_tokens
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, $8, $9, $10, $11)
        ON CONFLICT (creator_profile_id)
        DO UPDATE SET
          slug = EXCLUDED.slug,
@@ -552,9 +579,13 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
          description = EXCLUDED.description,
          tags = EXCLUDED.tags,
          stream_key = EXCLUDED.stream_key,
+         access_mode = EXCLUDED.access_mode,
+         chat_mode = EXCLUDED.chat_mode,
+         private_entry_tokens = EXCLUDED.private_entry_tokens,
+         member_monthly_tokens = EXCLUDED.member_monthly_tokens,
          is_public = TRUE,
          updated_at = NOW()`,
-      [randomUUID(), profileId, creator.slug, creator.title, creator.description, creator.tags, creator.slug],
+      [randomUUID(), profileId, creator.slug, creator.title, creator.description, creator.tags, creator.slug, accessMode, chatMode, 120, 450],
     );
   }
 

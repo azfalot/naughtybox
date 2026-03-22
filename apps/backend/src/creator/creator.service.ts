@@ -47,6 +47,10 @@ type CreatorRoomRow = {
   tags: string[];
   stream_key: string;
   is_public: boolean;
+  access_mode: 'public' | 'premium' | 'private';
+  chat_mode: 'registered' | 'members' | 'tippers';
+  private_entry_tokens: number;
+  member_monthly_tokens: number;
   created_at: string;
   updated_at: string;
 };
@@ -179,6 +183,10 @@ export class CreatorService {
              tags = $5,
              stream_key = $6,
              is_public = $7,
+             access_mode = $8,
+             chat_mode = $9,
+             private_entry_tokens = $10,
+             member_monthly_tokens = $11,
              updated_at = NOW()
          WHERE creator_profile_id = $1
          RETURNING *`,
@@ -190,6 +198,10 @@ export class CreatorService {
           tags,
           profile.slug,
           payload.isPublic ?? true,
+          payload.accessMode ?? 'public',
+          payload.chatMode ?? 'registered',
+          payload.privateEntryTokens ?? 120,
+          payload.memberMonthlyTokens ?? 450,
         ],
       );
       return this.mapRoom(result.rows[0]);
@@ -197,9 +209,10 @@ export class CreatorService {
 
     const result = await this.database.query<CreatorRoomRow>(
       `INSERT INTO creator_rooms (
-         id, creator_profile_id, slug, title, description, tags, stream_key, is_public
+         id, creator_profile_id, slug, title, description, tags, stream_key, is_public,
+         access_mode, chat_mode, private_entry_tokens, member_monthly_tokens
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         randomUUID(),
@@ -210,6 +223,10 @@ export class CreatorService {
         tags,
         profile.slug,
         payload.isPublic ?? true,
+        payload.accessMode ?? 'public',
+        payload.chatMode ?? 'registered',
+        payload.privateEntryTokens ?? 120,
+        payload.memberMonthlyTokens ?? 450,
       ],
     );
     return this.mapRoom(result.rows[0]);
@@ -291,6 +308,10 @@ export class CreatorService {
       tags: row.tags ?? [],
       streamKey: row.stream_key,
       isPublic: row.is_public,
+      accessMode: row.access_mode,
+      chatMode: row.chat_mode,
+      privateEntryTokens: row.private_entry_tokens,
+      memberMonthlyTokens: row.member_monthly_tokens,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };

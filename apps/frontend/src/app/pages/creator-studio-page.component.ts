@@ -125,8 +125,24 @@ import { WalletApiService } from '../services/wallet-api.service';
                 <input name="title" [value]="dashboard()?.room?.title ?? ''" />
               </label>
               <label>
+                <span>Acceso</span>
+                <input name="accessMode" [value]="dashboard()?.room?.accessMode ?? 'public'" />
+              </label>
+              <label>
+                <span>Chat</span>
+                <input name="chatMode" [value]="dashboard()?.room?.chatMode ?? 'registered'" />
+              </label>
+              <label>
                 <span>Tags</span>
                 <input name="tags" [value]="(dashboard()?.room?.tags ?? []).join(', ')" />
+              </label>
+              <label>
+                <span>Precio privado</span>
+                <input name="privateEntryTokens" type="number" min="1" [value]="dashboard()?.room?.privateEntryTokens ?? 120" />
+              </label>
+              <label>
+                <span>Precio mensual</span>
+                <input name="memberMonthlyTokens" type="number" min="1" [value]="dashboard()?.room?.memberMonthlyTokens ?? 450" />
               </label>
               <label class="studio-span">
                 <span>Descripcion</span>
@@ -161,6 +177,8 @@ import { WalletApiService } from '../services/wallet-api.service';
             <span class="inline-code">rtmp://localhost:1935/live</span>
             <p class="muted" style="margin-top: 14px;">Stream key</p>
             <span class="inline-code">{{ room.streamKey }}</span>
+            <p class="muted" style="margin-top: 14px;">Acceso / chat</p>
+            <span class="inline-code">{{ room.accessMode }} / {{ room.chatMode }}</span>
             <p class="muted" style="margin-top: 14px;">Siguiente fase</p>
             <span class="inline-code">Broadcast web desde navegador</span>
           </section>
@@ -311,6 +329,10 @@ export class CreatorStudioPageComponent implements OnInit {
         title: (form.elements.namedItem('title') as HTMLInputElement)?.value ?? '',
         description: (form.elements.namedItem('description') as HTMLTextAreaElement)?.value ?? '',
         tags: this.splitTags((form.elements.namedItem('tags') as HTMLInputElement)?.value ?? ''),
+        accessMode: ((form.elements.namedItem('accessMode') as HTMLInputElement)?.value ?? 'public') as 'public' | 'premium' | 'private',
+        chatMode: ((form.elements.namedItem('chatMode') as HTMLInputElement)?.value ?? 'registered') as 'registered' | 'members' | 'tippers',
+        privateEntryTokens: Number((form.elements.namedItem('privateEntryTokens') as HTMLInputElement)?.value || 120),
+        memberMonthlyTokens: Number((form.elements.namedItem('memberMonthlyTokens') as HTMLInputElement)?.value || 450),
       });
       await this.loadDashboard();
       this.notice.set('Sala guardada.');

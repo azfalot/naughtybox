@@ -10,6 +10,7 @@ import {
 import { SendChatMessageRequest } from '@naughtybox/shared-types';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
+import { RoomAccessService } from '../room-access/room-access.service';
 import { ChatService } from './chat.service';
 
 type AuthedSocket = Socket & {
@@ -34,6 +35,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly authService: AuthService,
     private readonly chatService: ChatService,
+    private readonly roomAccessService: RoomAccessService,
   ) {}
 
   async handleConnection(client: AuthedSocket) {
@@ -58,6 +60,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
+    const access = await this.roomAccessService.getViewerAccess(roomSlug, client.data.user.id);
+    if (!access.canWatch) {
+      client.emit('chat:error', 'No access to this room.');
+      return;
+    }
+
     await client.join(`room:${roomSlug}`);
     const recent = await this.chatService.getRecentMessages(roomSlug);
     client.emit('chat:history', recent);
@@ -69,6 +77,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: SendChatMessageRequest,
   ) {
     if (!client.data.user) {
+      return;
+    }
+
+    const access = await this.roomAccessService.getViewerAccess(payload.roomSlug, client.data.user.id);
+    if (!access.canChat) {
+      client.emit('chat:error', 'Chat not available for your access level.');
       return;
     }
 

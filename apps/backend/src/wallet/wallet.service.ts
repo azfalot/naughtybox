@@ -98,6 +98,19 @@ export class WalletService {
     return senderResult;
   }
 
+  async chargeForRoomAccess(userId: string, roomSlug: string, amount: number, description: string) {
+    if (!Number.isInteger(amount) || amount <= 0) {
+      throw new BadRequestException('A valid positive token amount is required.');
+    }
+
+    return this.applyWalletChange(userId, {
+      amount: -amount,
+      roomSlug,
+      type: 'debit',
+      description,
+    });
+  }
+
   private async findWallet(userId: string) {
     const result = await this.database.query<WalletRow>(
       `SELECT * FROM token_wallets WHERE user_id = $1 LIMIT 1`,

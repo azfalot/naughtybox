@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { FollowToggleResponse, FollowedCreator, StreamDetails, StreamSummary } from '@naughtybox/shared-types';
+import { FollowToggleResponse, FollowedCreator, StreamDetails, StreamSummary, UnlockRoomAccessResponse } from '@naughtybox/shared-types';
 import { AuthApiService } from './auth-api.service';
 
 @Injectable({
@@ -50,5 +50,27 @@ export class StreamsApiService {
       throw new Error('Unable to update follow');
     }
     return response.json() as Promise<FollowToggleResponse>;
+  }
+
+  async unlockPrivate(slug: string): Promise<UnlockRoomAccessResponse> {
+    const response = await fetch(`${this.baseUrl}/room-access/${slug}/private`, {
+      method: 'POST',
+      headers: this.authApi.authHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error('Unable to unlock private access');
+    }
+    return response.json() as Promise<UnlockRoomAccessResponse>;
+  }
+
+  async subscribe(slug: string): Promise<UnlockRoomAccessResponse> {
+    const response = await fetch(`${this.baseUrl}/room-access/${slug}/subscribe`, {
+      method: 'POST',
+      headers: this.authApi.authHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error('Unable to subscribe to creator');
+    }
+    return response.json() as Promise<UnlockRoomAccessResponse>;
   }
 }

@@ -86,11 +86,16 @@ export interface CreatorRoom {
   tags: string[];
   streamKey: string;
   isPublic: boolean;
+  accessMode: StreamAccessMode;
+  chatMode: ChatAccessMode;
+  privateEntryTokens: number;
+  memberMonthlyTokens: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export type StreamAccessMode = 'public' | 'premium' | 'private';
+export type ChatAccessMode = 'registered' | 'members' | 'tippers';
 
 export interface StreamSummary {
   id: string;
@@ -128,6 +133,18 @@ export interface StreamDetails extends Omit<StreamSummary, 'playbackHlsUrl'> {
   playback: StreamPlayback;
   publish: StreamPublish;
   creatorProfile?: CreatorPublicProfile;
+  viewerAccess?: ViewerRoomAccess;
+}
+
+export interface ViewerRoomAccess {
+  accessMode: StreamAccessMode;
+  chatMode: ChatAccessMode;
+  privateEntryTokens: number;
+  memberMonthlyTokens: number;
+  canWatch: boolean;
+  canChat: boolean;
+  isMember: boolean;
+  hasPrivateAccess: boolean;
 }
 
 export interface FollowedCreator {
@@ -179,6 +196,10 @@ export interface UpsertCreatorRoomRequest {
   description?: string;
   tags?: string[];
   isPublic?: boolean;
+  accessMode?: StreamAccessMode;
+  chatMode?: ChatAccessMode;
+  privateEntryTokens?: number;
+  memberMonthlyTokens?: number;
 }
 
 export interface PaymentProviderOption {
@@ -231,4 +252,8 @@ export interface TipCreatorRequest {
   roomSlug: string;
   amount: number;
   note?: string;
+}
+
+export interface UnlockRoomAccessResponse extends ViewerRoomAccess {
+  roomSlug: string;
 }
