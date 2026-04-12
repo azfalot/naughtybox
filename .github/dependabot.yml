@@ -1,0 +1,52 @@
+version: 2
+
+updates:
+  # Keep npm dependencies up to date
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    open-pull-requests-limit: 10
+    groups:
+      angular:
+        patterns:
+          - '@angular*'
+          - '@angular-devkit*'
+          - 'zone.js'
+      nestjs:
+        patterns:
+          - '@nestjs*'
+      eslint:
+        patterns:
+          - 'eslint*'
+          - 'typescript-eslint'
+          - '@eslint*'
+          - 'globals'
+
+  # Keep GitHub Actions up to date
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    open-pull-requests-limit: 5
+
+  # Keep Docker base images up to date
+  - package-ecosystem: 'docker'
+    directory: '/apps/backend'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+
+  - package-ecosystem: 'docker'
+    directory: '/apps/frontend'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+
+  - package-ecosystem: 'docker'
+    directory: '/infra/docker'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
