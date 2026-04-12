@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
-import { AuthApiService } from './services/auth-api.service';
+import { AuthApiService } from './shared/services/auth-api.service';
 
 @Component({
   selector: 'app-root',

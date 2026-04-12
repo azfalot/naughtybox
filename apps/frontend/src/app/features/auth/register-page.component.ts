@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AuthApiService } from '../services/auth-api.service';
+import { AuthApiService } from '../../shared/services/auth-api.service';
 
 @Component({
   selector: 'app-register-page',

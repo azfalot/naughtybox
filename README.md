@@ -59,6 +59,32 @@ Then open the matching room in the frontend:
 - `http://localhost:4200/streams/luna-en-directo`
 - `http://localhost:4200/streams/sara-night-show`
 
+## Frontend architecture
+
+The Angular app under `apps/frontend/src/app` follows a three-layer layout:
+
+```
+app/
+├── app.component.ts        # App shell (header, age gate, nav, footer)
+├── app.config.ts           # Angular providers
+├── app.routes.ts           # Top-level route declarations
+├── features/               # One sub-folder per product feature
+│   ├── auth/               # login-page, register-page
+│   ├── creator-studio/     # creator-studio-page
+│   ├── home/               # home-page (stream catalog)
+│   ├── legal/              # legal-page
+│   └── stream/             # stream-page (room view)
+└── shared/
+    ├── components/         # Reusable UI components (e.g. stream-player)
+    └── services/           # API services shared across features
+```
+
+**Conventions:**
+- Page components live under `features/<feature-name>/`.
+- UI components used by more than one feature live under `shared/components/`.
+- Injectable API services live under `shared/services/`.
+- App-level shell code (`app.component.ts`, `app.config.ts`, `app.routes.ts`) stays at the `app/` root.
+
 ## Notes
 
 - PostgreSQL and Redis are already in the stack for upcoming phases, but phase 1 still uses in-memory room metadata.
