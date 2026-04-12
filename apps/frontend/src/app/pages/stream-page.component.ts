@@ -282,12 +282,15 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   readonly canWatch = computed(() => this.stream()?.viewerAccess?.canWatch ?? true);
   readonly canChat = computed(() => this.stream()?.viewerAccess?.canChat ?? false);
   readonly avatarInitials = computed(() => {
-    const name = this.publicProfile().displayName || 'C';
+    const name = (this.publicProfile().displayName ?? '').trim();
+    if (!name) return 'C';
     return name
       .split(' ')
       .slice(0, 2)
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0)
       .map((part) => part.charAt(0).toUpperCase())
-      .join('');
+      .join('') || 'C';
   });
 
   async ngOnInit() {
