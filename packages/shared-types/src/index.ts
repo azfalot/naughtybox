@@ -3,6 +3,8 @@
  */
 
 export type UserRole = 'viewer' | 'creator' | 'admin';
+export type StreamSessionStatus = 'preparing' | 'live' | 'ended';
+export type StreamRoomPresence = 'loading' | 'preparing' | 'live' | 'offline';
 
 export interface User {
   id: string;
@@ -118,6 +120,7 @@ export interface StreamSummary {
   subcategories?: string[];
   accessMode?: StreamAccessMode;
   following?: boolean;
+  activeSessionId?: string;
 }
 
 export interface StreamPlayback {
@@ -131,11 +134,35 @@ export interface StreamPublish {
   obsServer: string;
 }
 
+export interface StreamSession {
+  id: string;
+  roomSlug: string;
+  streamKey: string;
+  source: 'detected' | 'browser' | 'obs';
+  status: StreamSessionStatus;
+  startedAt: string;
+  endedAt?: string;
+}
+
 export interface StreamDetails extends Omit<StreamSummary, 'playbackHlsUrl'> {
   playback: StreamPlayback;
   publish: StreamPublish;
   creatorProfile?: CreatorPublicProfile;
   viewerAccess?: ViewerRoomAccess;
+  activeSession?: StreamSession | null;
+}
+
+export interface ResolveStreamRoomPresenceInput {
+  isLoading: boolean;
+  isLive?: boolean;
+  activeSessionStatus?: StreamSessionStatus | null;
+}
+
+export function resolveStreamRoomPresence(input: ResolveStreamRoomPresenceInput): StreamRoomPresence {
+  if (input.isLoading) return 'loading';
+  if (input.isLive || input.activeSessionStatus === 'live') return 'live';
+  if (input.activeSessionStatus === 'preparing') return 'preparing';
+  return 'offline';
 }
 
 export interface ViewerRoomAccess {

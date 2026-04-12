@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreatorPublicProfile, StreamDetails, StreamSummary } from '@naughtybox/shared-types';
+import { CreatorPublicProfile, StreamDetails, StreamSession, StreamSummary } from '@naughtybox/shared-types';
 import { DatabaseService } from '../database/database.service';
 import { FollowsService } from '../follows/follows.service';
 import { RoomAccessService } from '../room-access/room-access.service';
+import { StreamSessionsService } from '../stream-sessions/stream-sessions.service';
 
 type StreamRow = {
   room_id: string;
@@ -43,13 +44,21 @@ export class StreamsService {
     private readonly database: DatabaseService,
     private readonly followsService: FollowsService,
     private readonly roomAccessService: RoomAccessService,
+    private readonly streamSessionsService: StreamSessionsService,
   ) {}
 
   async listStreams(viewerId: string | null = null): Promise<StreamSummary[]> {
     const rows = await this.getPublicRoomRows();
-    const liveStatus = await this.fetchLiveStatus(rows.map((row) => row.room_slug));
+    const liveStatus = await this.fetchLiveStatus(rows.map((row) => row.stream_key));
     const followMap = await this.followsService.getFollowMap(viewerId, rows.map((row) => row.room_slug));
-    return rows.map((row) => this.toSummary(row, liveStatus.get(row.room_slug) ?? false, followMap.get(row.room_slug) ?? false));
+    const sessions = await Promise.all(
+      rows.map((row) =>
+        this.streamSessionsService.reconcile(row.room_slug, row.stream_key, liveStatus.get(row.stream_key) ?? false),
+      ),
+    );
+    return rows.map((row, i) =>
+      this.toSummary(row, liveStatus.get(row.stream_key) ?? false, followMap.get(row.room_slug) ?? false, sessions[i] ?? null),
+    );
   }
 
   async getStream(slug: string, viewerId: string | null = null): Promise<StreamDetails> {
@@ -99,9 +108,10 @@ export class StreamsService {
       throw new NotFoundException(`Stream "${slug}" not found.`);
     }
 
-    const isLive = (await this.fetchLiveStatus([row.room_slug])).get(row.room_slug) ?? false;
+    const isLive = (await this.fetchLiveStatus([row.stream_key])).get(row.stream_key) ?? false;
+    const session = await this.streamSessionsService.reconcile(row.room_slug, row.stream_key, isLive);
     const followMap = await this.followsService.getFollowMap(viewerId, [row.room_slug]);
-    return this.toDetails(row, isLive, followMap.get(row.room_slug) ?? false, await this.roomAccessService.getViewerAccess(row.room_slug, viewerId));
+    return this.toDetails(row, isLive, followMap.get(row.room_slug) ?? false, await this.roomAccessService.getViewerAccess(row.room_slug, viewerId), session ?? null);
   }
 
   async getBillingConfig() {
@@ -170,28 +180,24 @@ export class StreamsService {
     return result.rows;
   }
 
-  private async fetchLiveStatus(slugs: string[]) {
-    const mediaInternalBaseUrl = process.env.MEDIA_INTERNAL_BASE_URL ?? 'http://localhost:8888';
-    const entries = await Promise.all(
-      slugs.map(async (slug) => {
-        try {
-          const response = await fetch(`${mediaInternalBaseUrl}/live/${slug}/index.m3u8`, {
-            headers: {
-              Accept: 'application/vnd.apple.mpegurl,text/plain',
-            },
-          });
-
-          return [slug, response.ok] as const;
-        } catch {
-          return [slug, false] as const;
-        }
-      }),
-    );
-
-    return new Map(entries);
+  private async fetchLiveStatus(streamKeys: string[]) {
+    const mediaApiBaseUrl = process.env.MEDIA_API_INTERNAL_BASE_URL ?? 'http://localhost:9997';
+    try {
+      const response = await fetch(`${mediaApiBaseUrl}/v3/paths/list`);
+      if (response.ok) {
+        const data = (await response.json()) as { items?: Array<{ name: string; ready: boolean }> };
+        const activePaths = new Set(
+          (data.items ?? []).filter((p) => p.ready).map((p) => p.name),
+        );
+        return new Map(streamKeys.map((key) => [key, activePaths.has(key)] as const));
+      }
+    } catch {
+      // MediaMTX not reachable
+    }
+    return new Map(streamKeys.map((key) => [key, false] as const));
   }
 
-  private toSummary(row: StreamRow, isLive: boolean, following = false): StreamSummary {
+  private toSummary(row: StreamRow, isLive: boolean, following = false, activeSession: StreamSession | null = null): StreamSummary {
     const mediaBaseUrl = process.env.MEDIA_BASE_URL ?? 'http://localhost:4200/media';
     return {
       id: row.room_id,
@@ -203,7 +209,7 @@ export class StreamsService {
       isLive,
       currentViewers: 0,
       thumbnailUrl: row.avatar_url ?? undefined,
-      playbackHlsUrl: `${mediaBaseUrl}/live/${row.room_slug}/index.m3u8`,
+      playbackHlsUrl: `${mediaBaseUrl}/live/${row.stream_key}/index.m3u8`,
       age: row.age ?? undefined,
       gender: row.gender ?? undefined,
       country: row.country ?? undefined,
@@ -212,18 +218,25 @@ export class StreamsService {
       subcategories: row.subcategories ?? [],
       accessMode: row.access_mode,
       following,
+      activeSessionId: activeSession?.id,
     };
   }
 
-  private toDetails(row: StreamRow, isLive: boolean, following = false, viewerAccess?: StreamDetails['viewerAccess']): StreamDetails {
+  private toDetails(
+    row: StreamRow,
+    isLive: boolean,
+    following = false,
+    viewerAccess?: StreamDetails['viewerAccess'],
+    activeSession: StreamSession | null = null,
+  ): StreamDetails {
     const publicApiBaseUrl = process.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
     const mediaBaseUrl = process.env.MEDIA_BASE_URL ?? 'http://localhost:4200/media';
     const publishBaseUrl = process.env.RTMP_PUBLISH_URL ?? 'rtmp://localhost:1935/live';
 
     return {
-      ...this.toSummary(row, isLive, following),
+      ...this.toSummary(row, isLive, following, activeSession),
       playback: {
-        hlsUrl: `${mediaBaseUrl}/live/${row.room_slug}/index.m3u8`,
+        hlsUrl: `${mediaBaseUrl}/live/${row.stream_key}/index.m3u8`,
         shareUrl: `${publicApiBaseUrl}/streams/${row.room_slug}`,
       },
       publish: {
@@ -233,6 +246,7 @@ export class StreamsService {
       },
       creatorProfile: this.toPublicProfile(row),
       viewerAccess,
+      activeSession,
     };
   }
 
