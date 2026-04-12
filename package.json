@@ -10,7 +10,19 @@
     "backend:dev": "npm run dev -w @naughtybox/backend",
     "streaming:dev": "npm run dev -w @naughtybox/streaming",
     "frontend:dev": "npm run start -w @naughtybox/frontend",
-    "build": "npm run build -w @naughtybox/backend && npm run build -w @naughtybox/streaming && npm run build -w @naughtybox/frontend"
+    "lint": "eslint . --ext .js,.mjs,.cjs,.ts",
+    "lint:fix": "eslint . --ext .js,.mjs,.cjs,.ts --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "build": "npm run build -w @naughtybox/backend && npm run build -w @naughtybox/streaming && npm run build -w @naughtybox/frontend",
+    "build:ci": "npm run build -w @naughtybox/shared-types && npm run build -w @naughtybox/backend && npm run build -w @naughtybox/streaming && npm run build -w @naughtybox/frontend",
+    "clean:dist": "rimraf apps/backend/dist apps/frontend/dist packages/shared-types/dist",
+    "refresh:runtime": "powershell -ExecutionPolicy Bypass -File .\\scripts\\refresh-runtime.ps1",
+    "test:units": "node --test scripts/unit-revenue-split.mjs scripts/unit-rate-limit.mjs scripts/unit-room-access-policy.mjs",
+    "test:integration": "npm run test:smokes",
+    "test:e2e": "playwright test",
+    "test:smokes": "powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-current-state.ps1 && powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-security.ps1 && powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-creator-verification.ps1 && powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-broadcast-session.ps1 && powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-provider-webhooks.ps1 && powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-payout-rail.ps1",
+    "validate:all": "npm run clean:dist && npm run format:check && npm run lint && npm run build:ci && npm run test:units && npm run refresh:runtime && npm run test:smokes"
   },
   "engines": {
     "node": ">=20"
@@ -18,5 +30,14 @@
   "dependencies": {
     "primeicons": "^7.0.0",
     "primeng": "^17.18.15"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.59.1",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.5.0",
+    "prettier": "^3.8.2",
+    "typescript-eslint": "^8.58.1"
   }
 }
