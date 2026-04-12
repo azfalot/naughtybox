@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StreamSummary } from '@naughtybox/shared-types';
-import { StreamPlayerComponent } from '../stream-player.component';
-import { AuthApiService } from '../services/auth-api.service';
-import { StreamsApiService } from '../services/streams-api.service';
+import { StreamPlayerComponent } from '../../shared/stream-player.component';
+import { AuthApiService } from '../../services/auth-api.service';
+import { StreamsApiService } from '../../services/streams-api.service';
 
 type LobbySection = 'home' | 'discover' | 'tags' | 'private' | 'following';
 

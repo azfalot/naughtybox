@@ -14,7 +14,7 @@ Phase 1 MVP for a modern live streaming platform.
 ## Stack
 
 - `apps/backend`: NestJS API
-- `apps/frontend`: Angular 17 + Tailwind
+- `apps/frontend`: Angular 17 + Tailwind — see [`apps/frontend/ARCHITECTURE.md`](apps/frontend/ARCHITECTURE.md) for folder conventions
 - `apps/streaming`: reserved for future low-latency features
 - `infra/docker`: Docker Compose + MediaMTX
 - `infra/nginx`: reverse proxy reference

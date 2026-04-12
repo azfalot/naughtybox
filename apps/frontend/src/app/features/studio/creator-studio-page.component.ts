@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BillingConfig, CreatorDashboard, WalletSummary } from '@naughtybox/shared-types';
-import { AuthApiService } from '../services/auth-api.service';
-import { CreatorApiService } from '../services/creator-api.service';
-import { WalletApiService } from '../services/wallet-api.service';
+import { AuthApiService } from '../../services/auth-api.service';
+import { CreatorApiService } from '../../services/creator-api.service';
+import { WalletApiService } from '../../services/wallet-api.service';
 
 @Component({
   selector: 'app-creator-studio-page',

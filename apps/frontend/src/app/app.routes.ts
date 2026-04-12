@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import { HomePageComponent } from './pages/home-page.component';
-import { CreatorStudioPageComponent } from './pages/creator-studio-page.component';
-import { LoginPageComponent } from './pages/login-page.component';
-import { RegisterPageComponent } from './pages/register-page.component';
-import { StreamPageComponent } from './pages/stream-page.component';
-import { LegalPageComponent } from './pages/legal-page.component';
+import { HomePageComponent } from './features/catalog/home-page.component';
+import { CreatorStudioPageComponent } from './features/studio/creator-studio-page.component';
+import { LoginPageComponent } from './features/auth/login-page.component';
+import { RegisterPageComponent } from './features/auth/register-page.component';
+import { StreamPageComponent } from './features/stream/stream-page.component';
+import { LegalPageComponent } from './features/legal/legal-page.component';
 
 export const routes: Routes = [
   {

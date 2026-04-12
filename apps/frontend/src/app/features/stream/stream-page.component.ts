@@ -2,11 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ChatMessage, CreatorPublicProfile, StreamDetails, WalletSummary } from '@naughtybox/shared-types';
-import { StreamPlayerComponent } from '../stream-player.component';
-import { AuthApiService } from '../services/auth-api.service';
-import { ChatApiService } from '../services/chat-api.service';
-import { StreamsApiService } from '../services/streams-api.service';
-import { WalletApiService } from '../services/wallet-api.service';
+import { StreamPlayerComponent } from '../../shared/stream-player.component';
+import { AuthApiService } from '../../services/auth-api.service';
+import { ChatApiService } from '../../services/chat-api.service';
+import { StreamsApiService } from '../../services/streams-api.service';
+import { WalletApiService } from '../../services/wallet-api.service';
 
 type MediaPreview = {
   title: string;
