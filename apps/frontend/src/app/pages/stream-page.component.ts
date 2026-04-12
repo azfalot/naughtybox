@@ -7,12 +7,8 @@ import { AuthApiService } from '../services/auth-api.service';
 import { ChatApiService } from '../services/chat-api.service';
 import { StreamsApiService } from '../services/streams-api.service';
 import { WalletApiService } from '../services/wallet-api.service';
-
-type MediaPreview = {
-  title: string;
-  type: 'free' | 'premium' | 'store';
-  price?: string;
-};
+import { StreamChatPanelComponent } from './stream/stream-chat-panel.component';
+import { StreamCreatorProfileComponent } from './stream/stream-creator-profile.component';
 
 const DEFAULT_PROFILE: CreatorPublicProfile = {
   displayName: 'Creator',
@@ -26,7 +22,7 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
 @Component({
   selector: 'app-stream-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, StreamPlayerComponent],
+  imports: [CommonModule, RouterLink, StreamPlayerComponent, StreamChatPanelComponent, StreamCreatorProfileComponent],
   template: `
     <main class="page page-wide">
       <a class="muted back-link" routerLink="/">Volver al listado</a>
@@ -93,125 +89,18 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
             </div>
           </section>
 
-          <section class="panel-card profile-hero" [style.background]="coverStyle()">
-            <div class="profile-hero-copy profile-hero-copy-tight">
-              <p class="eyebrow">Perfil</p>
-              <h2>{{ publicProfile().displayName }}</h2>
-              <p class="muted profile-hero-bio">{{ publicProfile().bio }}</p>
-              <div class="social-links-grid social-links-grid-tight" *ngIf="hasSocialLinks()">
-                <a *ngIf="publicProfile().instagramUrl" class="social-link-card social-link-card-mini" [href]="publicProfile().instagramUrl" target="_blank" rel="noreferrer"><span class="social-icon">IG</span><span>Instagram</span></a>
-                <a *ngIf="publicProfile().xUrl" class="social-link-card social-link-card-mini" [href]="publicProfile().xUrl" target="_blank" rel="noreferrer"><span class="social-icon">X</span><span>X</span></a>
-                <a *ngIf="publicProfile().onlyFansUrl" class="social-link-card social-link-card-mini" [href]="publicProfile().onlyFansUrl" target="_blank" rel="noreferrer"><span class="social-icon">OF</span><span>OnlyFans</span></a>
-                <a *ngIf="publicProfile().websiteUrl" class="social-link-card social-link-card-mini" [href]="publicProfile().websiteUrl" target="_blank" rel="noreferrer"><span class="social-icon">WEB</span><span>Web</span></a>
-              </div>
-            </div>
-
-            <div class="profile-stats">
-              <div class="profile-stat-box">
-                <strong>{{ followersCount() }}</strong>
-                <span>Followers</span>
-              </div>
-              <div class="profile-stat-box">
-                <strong>{{ profileViewsCount() }}</strong>
-                <span>Visibilidad</span>
-              </div>
-              <div class="profile-stat-box">
-                <strong>#{{ rankingScore() }}</strong>
-                <span>Ranking</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="panel-card profile-section">
-            <div class="profile-section-grid">
-              <div>
-                <h3 class="mini-title">Acerca de {{ publicProfile().displayName }}</h3>
-                <p class="muted room-bio">{{ publicProfile().bio }}</p>
-              </div>
-              <div class="profile-facts">
-                <div><span class="muted">Edad</span><strong>{{ publicProfile().age || '-' }}</strong></div>
-                <div><span class="muted">Genero</span><strong>{{ publicProfile().gender || '-' }}</strong></div>
-                <div><span class="muted">Ciudad</span><strong>{{ publicProfile().city || '-' }}</strong></div>
-                <div><span class="muted">Relacion</span><strong>{{ publicProfile().relationshipStatus || '-' }}</strong></div>
-                <div><span class="muted">Body type</span><strong>{{ publicProfile().bodyType || '-' }}</strong></div>
-                <div><span class="muted">Idiomas</span><strong>{{ publicProfile().languages.join(' · ') || '-' }}</strong></div>
-              </div>
-            </div>
-          </section>
-
-          <section class="panel-card profile-section" *ngIf="hasSocialLinks()">
-            <div class="profile-section-header">
-              <h3 class="mini-title">Redes y enlaces</h3>
-            </div>
-            <div class="social-links-grid">
-              <a *ngIf="publicProfile().instagramUrl" class="social-link-card" [href]="publicProfile().instagramUrl" target="_blank" rel="noreferrer"><span class="social-icon">IG</span><span>Instagram</span></a>
-              <a *ngIf="publicProfile().xUrl" class="social-link-card" [href]="publicProfile().xUrl" target="_blank" rel="noreferrer"><span class="social-icon">X</span><span>X</span></a>
-              <a *ngIf="publicProfile().onlyFansUrl" class="social-link-card" [href]="publicProfile().onlyFansUrl" target="_blank" rel="noreferrer"><span class="social-icon">OF</span><span>OnlyFans</span></a>
-              <a *ngIf="publicProfile().websiteUrl" class="social-link-card" [href]="publicProfile().websiteUrl" target="_blank" rel="noreferrer"><span class="social-icon">WEB</span><span>Website</span></a>
-            </div>
-          </section>
-
-          <section class="panel-card profile-section">
-            <div class="profile-section-header">
-              <h3 class="mini-title">Tienda destacada</h3>
-              <a class="text-link" href="#">Ver tienda</a>
-            </div>
-            <div class="media-strip">
-              <article class="media-card" *ngFor="let item of storePreview()">
-                <div class="media-card-thumb media-card-store">{{ item.type === 'store' ? 'SHOP' : 'MEDIA' }}</div>
-                <strong>{{ item.title }}</strong>
-                <span>{{ item.price || 'Disponible' }}</span>
-              </article>
-            </div>
-          </section>
-
-          <section class="panel-card profile-section">
-            <div class="profile-section-header">
-              <h3 class="mini-title">Videos</h3>
-              <a class="text-link" href="#">Ver todo</a>
-            </div>
-            <div class="media-strip">
-              <article class="media-card" *ngFor="let item of videoPreview()">
-                <div class="media-card-thumb" [class.media-card-premium]="item.type === 'premium'">
-                  {{ item.type === 'premium' ? 'VIP' : 'FREE' }}
-                </div>
-                <strong>{{ item.title }}</strong>
-                <span>{{ item.price || 'Gratis' }}</span>
-              </article>
-            </div>
-          </section>
+          <app-stream-creator-profile [profile]="publicProfile()" />
         </div>
 
         <aside class="stream-sidebar">
-          <section class="panel-card chat-panel">
-            <div class="chat-header">
-              <h2 class="mini-title" style="margin: 0;">Chat en vivo</h2>
-              <span class="muted">{{ stream()!.viewerAccess?.chatMode || 'registered' }}</span>
-            </div>
-
-            <div class="chat-messages">
-              <article class="chat-message" *ngFor="let message of messages()">
-                <strong>{{ message.authorName }}</strong>
-                <p>{{ message.body }}</p>
-              </article>
-            </div>
-
-            <form *ngIf="canChat(); else loginForChat" class="chat-form" (submit)="sendMessage($event)">
-              <input type="text" name="message" placeholder="Escribe un mensaje..." />
-              <button type="submit">Enviar</button>
-            </form>
-
-            <ng-template #loginForChat>
-              <div class="chat-locked">
-                <p class="muted">{{ chatLockMessage() }}</p>
-                <div class="studio-actions">
-                  <a *ngIf="!authApi.isAuthenticated()" class="text-link" routerLink="/login">Entrar</a>
-                  <button *ngIf="authApi.isAuthenticated()" type="button" class="text-link" (click)="unlockPrivate()">Desbloquear</button>
-                  <button *ngIf="authApi.isAuthenticated()" type="button" class="text-link" (click)="subscribe()">Suscribirme</button>
-                </div>
-              </div>
-            </ng-template>
-          </section>
+          <app-stream-chat-panel
+            [stream]="stream()"
+            [messages]="messages()"
+            [canChat]="canChat()"
+            (sendMessage)="onSendMessage($event)"
+            (unlock)="unlockPrivate()"
+            (subscribe)="subscribe()"
+          />
 
           <section class="panel-card" *ngIf="authApi.isAuthenticated()">
             <div class="chat-header">
@@ -262,9 +151,6 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   readonly messages = signal<ChatMessage[]>([]);
   readonly wallet = signal<WalletSummary | null>(null);
   readonly publicProfile = computed<CreatorPublicProfile>(() => this.stream()?.creatorProfile ?? DEFAULT_PROFILE);
-  readonly followersCount = computed(() => 1800 + this.publicProfile().categories.length * 240);
-  readonly profileViewsCount = computed(() => 12000 + this.publicProfile().subcategories.length * 750);
-  readonly rankingScore = computed(() => 120 + this.publicProfile().languages.length * 12);
   readonly canWatch = computed(() => this.stream()?.viewerAccess?.canWatch ?? true);
   readonly canChat = computed(() => this.stream()?.viewerAccess?.canChat ?? false);
 
@@ -301,13 +187,6 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  coverStyle() {
-    return (
-      this.publicProfile().coverImageUrl ??
-      'linear-gradient(135deg, rgba(21,159,149,0.32), rgba(255,138,61,0.22), rgba(7,18,20,0.94))'
-    );
-  }
-
   accessHeadline() {
     return this.stream()?.viewerAccess?.accessMode === 'private' ? 'Show privado' : 'Contenido premium';
   }
@@ -325,57 +204,12 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     return `Suscribete por ${access.memberMonthlyTokens} tokens al mes para ver y chatear con acceso premium.`;
   }
 
-  chatLockMessage() {
-    const access = this.stream()?.viewerAccess;
-    if (!this.authApi.isAuthenticated()) {
-      return 'Entra con tu cuenta para acceder al chat y a los desbloqueos premium.';
-    }
-    if (access?.chatMode === 'members') {
-      return 'Este chat es solo para miembros o usuarios con acceso privado activo.';
-    }
-    if (access?.chatMode === 'tippers') {
-      return 'Este chat es solo para tippers, miembros o usuarios con acceso privado.';
-    }
-    return 'El chat necesita acceso registrado y permisos activos en la sala.';
-  }
-
-  storePreview(): MediaPreview[] {
-    return [
-      { title: 'Wishlist premium', type: 'store', price: '12 tokens' },
-      { title: 'Private pack', type: 'store', price: '45 tokens' },
-      { title: 'Gift request', type: 'store', price: '25 tokens' },
-    ];
-  }
-
-  videoPreview(): MediaPreview[] {
-    return [
-      { title: 'Teaser diario', type: 'free' },
-      { title: 'Afterhours cut', type: 'premium', price: '18 tokens' },
-      { title: 'VIP backstage', type: 'premium', price: '32 tokens' },
-      { title: 'Free intro clip', type: 'free' },
-    ];
-  }
-
-  hasSocialLinks() {
-    return Boolean(
-      this.publicProfile().instagramUrl ||
-      this.publicProfile().xUrl ||
-      this.publicProfile().onlyFansUrl ||
-      this.publicProfile().websiteUrl,
-    );
-  }
-
-  async sendMessage(event: Event) {
-    event.preventDefault();
-    const form = event.target as HTMLFormElement;
-    const input = form.elements.namedItem('message') as HTMLInputElement | null;
-
-    if (!input || !input.value.trim() || !this.stream() || !this.canChat()) {
+  async onSendMessage(body: string) {
+    if (!this.stream() || !this.canChat()) {
       return;
     }
 
-    this.chatApi.sendMessage(this.stream()!.slug, input.value.trim());
-    input.value = '';
+    this.chatApi.sendMessage(this.stream()!.slug, body);
   }
 
   async addDevCredit() {
