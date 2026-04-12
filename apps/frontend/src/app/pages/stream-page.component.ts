@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ChatMessage, CreatorPublicProfile, StreamDetails, WalletSummary } from '@naughtybox/shared-types';
+import { CreatorAvatarComponent } from '../creator-avatar.component';
+import { RoomAccessGateComponent } from '../room-access-gate.component';
 import { StreamPlayerComponent } from '../stream-player.component';
 import { AuthApiService } from '../services/auth-api.service';
 import { ChatApiService } from '../services/chat-api.service';
@@ -26,7 +28,7 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
 @Component({
   selector: 'app-stream-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, StreamPlayerComponent],
+  imports: [CommonModule, RouterLink, StreamPlayerComponent, RoomAccessGateComponent, CreatorAvatarComponent],
   template: `
     <main class="page page-wide">
       <a class="muted back-link" routerLink="/">Volver al listado</a>
@@ -36,7 +38,8 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
 
       <section *ngIf="stream()" class="stream-layout">
         <div>
-          <div class="video-frame gated-frame">
+          <!-- Video frame with live glow when streaming -->
+          <div class="video-frame gated-frame" [class.video-frame-live]="stream()!.isLive && canWatch()">
             <app-stream-player
               *ngIf="canWatch()"
               [src]="stream()!.playback.hlsUrl"
@@ -44,56 +47,66 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
               [muted]="false"
             />
 
-            <div *ngIf="!canWatch()" class="access-gate">
-              <p class="eyebrow">Access</p>
-              <h2 class="mini-title">{{ accessHeadline() }}</h2>
-              <p class="muted">{{ accessCopy() }}</p>
-              <div class="studio-actions">
-                <button *ngIf="stream()!.viewerAccess?.accessMode !== 'public'" type="button" class="text-link" (click)="unlockPrivate()">
-                  Desbloquear {{ stream()!.viewerAccess?.privateEntryTokens }} tokens
-                </button>
-                <button type="button" class="text-link" (click)="subscribe()">
-                  Suscribirme {{ stream()!.viewerAccess?.memberMonthlyTokens }} tokens
-                </button>
-                <a *ngIf="!authApi.isAuthenticated()" class="text-link" routerLink="/login">Entrar</a>
+            <app-room-access-gate
+              *ngIf="!canWatch()"
+              [eyebrow]="accessEyebrow()"
+              [headline]="accessHeadline()"
+              [copy]="accessCopy()"
+              [privateTokens]="stream()!.viewerAccess?.privateEntryTokens"
+              [memberTokens]="stream()!.viewerAccess?.memberMonthlyTokens"
+              [isAuthenticated]="authApi.isAuthenticated()"
+              [canUnlock]="stream()!.viewerAccess?.accessMode === 'private'"
+              (unlockClicked)="unlockPrivate()"
+              (subscribeClicked)="subscribe()"
+            />
+          </div>
+
+          <!-- Creator bar: avatar + title + status + actions -->
+          <div class="room-creator-bar panel-card">
+            <app-creator-avatar
+              [name]="publicProfile().displayName"
+              size="lg"
+              [isLive]="stream()!.isLive"
+            />
+            <div class="room-creator-info">
+              <div class="room-creator-headline">
+                <h1 class="room-creator-title">{{ stream()!.title }}</h1>
+                <div class="room-status-pills">
+                  <span [class]="stream()!.isLive ? 'badge-live' : 'badge-offline'">
+                    {{ stream()!.isLive ? '● En directo' : 'Offline' }}
+                  </span>
+                  <span class="viewer-pill">{{ stream()!.currentViewers || 0 }} viendo</span>
+                  <span class="viewer-pill room-access-badge room-access-badge-{{ stream()!.accessMode || 'public' }}">
+                    {{ stream()!.accessMode || 'public' }}
+                  </span>
+                </div>
               </div>
+              <p class="muted room-creator-kicker">
+                {{ publicProfile().displayName }}
+                <span *ngIf="stream()!.description"> &middot; {{ stream()!.description }}</span>
+              </p>
+              <div class="room-creator-meta">
+                <span class="room-meta-chip" *ngIf="publicProfile().categories.length">
+                  {{ publicProfile().categories.slice(0, 2).join(' · ') }}
+                </span>
+                <span class="room-meta-chip" *ngIf="publicProfile().country">
+                  {{ publicProfile().country }}
+                </span>
+                <span class="room-meta-chip">
+                  Chat: {{ stream()!.viewerAccess?.chatMode || 'registered' }}
+                </span>
+              </div>
+            </div>
+            <div class="room-creator-actions">
+              <button type="button" class="action-button action-button-follow" [class.action-button-following]="stream()!.following" (click)="toggleFollow()">
+                {{ stream()!.following ? '✓ Siguiendo' : '+ Seguir' }}
+              </button>
+              <a class="action-button action-button-report" routerLink="/legal/18plus">Reportar</a>
             </div>
           </div>
 
-          <section class="panel-card room-summary room-summary-page">
-            <div class="room-summary-head">
-              <div class="room-summary-copy">
-                <h1>{{ stream()!.title }}</h1>
-                <p class="muted room-kicker">{{ stream()!.creatorName }} · {{ stream()!.description }}</p>
-              </div>
-              <div class="room-status-pills room-status-pills-compact">
-                <span [class]="stream()!.isLive ? 'badge-live' : 'badge-offline'">{{ stream()!.isLive ? 'En directo' : 'Offline' }}</span>
-                <span class="viewer-pill">{{ stream()!.currentViewers || 0 }} viendo</span>
-                <span class="viewer-pill">{{ stream()!.accessMode || 'public' }}</span>
-                <button type="button" class="action-button action-button-ghost" (click)="toggleFollow()">
-                  {{ stream()!.following ? 'Siguiendo' : 'Seguir' }}
-                </button>
-                <a class="action-button action-button-warn" routerLink="/legal/18plus">Reportar</a>
-              </div>
-            </div>
-
-            <div class="creator-grid creator-grid-tight">
-              <div>
-                <p class="muted stat-label">Categorias</p>
-                <strong>{{ publicProfile().categories.join(' · ') || 'General' }}</strong>
-              </div>
-              <div>
-                <p class="muted stat-label">Pais</p>
-                <strong>{{ publicProfile().country || 'Sin definir' }}</strong>
-              </div>
-              <div>
-                <p class="muted stat-label">Chat</p>
-                <strong>{{ stream()!.viewerAccess?.chatMode || 'registered' }}</strong>
-              </div>
-            </div>
-          </section>
-
-          <section class="panel-card profile-hero" [style.background]="coverStyle()">
+          <!-- Profile hero -->
+          <section class="panel-card profile-hero profile-hero-room" [style.background]="coverStyle()">
             <div class="profile-hero-copy profile-hero-copy-tight">
               <p class="eyebrow">Perfil</p>
               <h2>{{ publicProfile().displayName }}</h2>
@@ -122,6 +135,7 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
             </div>
           </section>
 
+          <!-- About + facts -->
           <section class="panel-card profile-section">
             <div class="profile-section-grid">
               <div>
@@ -139,6 +153,7 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
             </div>
           </section>
 
+          <!-- Social links -->
           <section class="panel-card profile-section" *ngIf="hasSocialLinks()">
             <div class="profile-section-header">
               <h3 class="mini-title">Redes y enlaces</h3>
@@ -151,6 +166,7 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
             </div>
           </section>
 
+          <!-- Store preview -->
           <section class="panel-card profile-section">
             <div class="profile-section-header">
               <h3 class="mini-title">Tienda destacada</h3>
@@ -165,6 +181,7 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
             </div>
           </section>
 
+          <!-- Video preview -->
           <section class="panel-card profile-section">
             <div class="profile-section-header">
               <h3 class="mini-title">Videos</h3>
@@ -183,22 +200,28 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
         </div>
 
         <aside class="stream-sidebar">
+          <!-- Chat -->
           <section class="panel-card chat-panel">
             <div class="chat-header">
               <h2 class="mini-title" style="margin: 0;">Chat en vivo</h2>
-              <span class="muted">{{ stream()!.viewerAccess?.chatMode || 'registered' }}</span>
+              <span class="chat-mode-badge">{{ stream()!.viewerAccess?.chatMode || 'registered' }}</span>
             </div>
 
             <div class="chat-messages">
               <article class="chat-message" *ngFor="let message of messages()">
-                <strong>{{ message.authorName }}</strong>
+                <span class="chat-author">{{ message.authorName }}</span>
                 <p>{{ message.body }}</p>
               </article>
+              <div *ngIf="messages().length === 0" class="chat-empty">
+                <p class="muted">Aún no hay mensajes. ¡Sé el primero!</p>
+              </div>
             </div>
 
             <form *ngIf="canChat(); else loginForChat" class="chat-form" (submit)="sendMessage($event)">
-              <input type="text" name="message" placeholder="Escribe un mensaje..." />
-              <button type="submit">Enviar</button>
+              <input type="text" name="message" placeholder="Escribe un mensaje..." autocomplete="off" />
+              <button type="submit">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M14 8 2 2l3 6-3 6 12-6Z" fill="currentColor"/></svg>
+              </button>
             </form>
 
             <ng-template #loginForChat>
@@ -213,10 +236,11 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
             </ng-template>
           </section>
 
+          <!-- Wallet -->
           <section class="panel-card" *ngIf="authApi.isAuthenticated()">
             <div class="chat-header">
               <h2 class="mini-title" style="margin: 0;">Wallet</h2>
-              <span class="viewer-pill">{{ wallet()?.balance ?? 0 }} tokens</span>
+              <span class="wallet-balance-badge">{{ wallet()?.balance ?? 0 }} tokens</span>
             </div>
 
             <div class="studio-actions" style="margin-top: 12px;">
@@ -232,8 +256,10 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
             </ul>
           </section>
 
-          <section class="panel-card">
-            <h2 class="mini-title">Acceso premium</h2>
+          <!-- Premium access info -->
+          <section class="panel-card room-premium-card">
+            <p class="eyebrow">Premium</p>
+            <h2 class="mini-title" style="margin-bottom: 10px;">Acceso exclusivo</h2>
             <ul class="helper-list">
               <li>Privado por tokens o membresia mensual.</li>
               <li>Chat configurable por nivel de acceso.</li>
@@ -308,8 +334,12 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     );
   }
 
-  accessHeadline() {
+  accessEyebrow() {
     return this.stream()?.viewerAccess?.accessMode === 'private' ? 'Show privado' : 'Contenido premium';
+  }
+
+  accessHeadline() {
+    return this.stream()?.viewerAccess?.accessMode === 'private' ? 'Acceso exclusivo' : 'Suscripción requerida';
   }
 
   accessCopy() {
