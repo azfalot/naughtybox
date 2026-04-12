@@ -36,7 +36,7 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
 
       <section *ngIf="stream()" class="stream-layout">
         <div>
-          <div class="video-frame gated-frame">
+          <div class="video-frame gated-frame" [class.video-frame-live]="stream()!.isLive">
             <app-stream-player
               *ngIf="canWatch()"
               [src]="stream()!.playback.hlsUrl"
@@ -45,26 +45,32 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
             />
 
             <div *ngIf="!canWatch()" class="access-gate">
-              <p class="eyebrow">Access</p>
-              <h2 class="mini-title">{{ accessHeadline() }}</h2>
-              <p class="muted">{{ accessCopy() }}</p>
-              <div class="studio-actions">
-                <button *ngIf="stream()!.viewerAccess?.accessMode !== 'public'" type="button" class="text-link" (click)="unlockPrivate()">
-                  Desbloquear {{ stream()!.viewerAccess?.privateEntryTokens }} tokens
-                </button>
-                <button type="button" class="text-link" (click)="subscribe()">
-                  Suscribirme {{ stream()!.viewerAccess?.memberMonthlyTokens }} tokens
-                </button>
-                <a *ngIf="!authApi.isAuthenticated()" class="text-link" routerLink="/login">Entrar</a>
+              <div class="access-gate-card">
+                <div class="gate-lock-icon">🔒</div>
+                <p class="eyebrow">Acceso</p>
+                <h2 class="mini-title">{{ accessHeadline() }}</h2>
+                <p class="muted" style="margin: 0; font-size: 0.9rem;">{{ accessCopy() }}</p>
+                <div class="access-cta-row">
+                  <button *ngIf="stream()!.viewerAccess?.accessMode !== 'public'" type="button" class="text-link" (click)="unlockPrivate()">
+                    Desbloquear · {{ stream()!.viewerAccess?.privateEntryTokens }} tokens
+                  </button>
+                  <button type="button" class="text-link" (click)="subscribe()">
+                    Suscribirme · {{ stream()!.viewerAccess?.memberMonthlyTokens }} tokens
+                  </button>
+                  <a *ngIf="!authApi.isAuthenticated()" class="text-link" routerLink="/login">Entrar</a>
+                </div>
               </div>
             </div>
           </div>
 
           <section class="panel-card room-summary room-summary-page">
             <div class="room-summary-head">
-              <div class="room-summary-copy">
-                <h1>{{ stream()!.title }}</h1>
-                <p class="muted room-kicker">{{ stream()!.creatorName }} · {{ stream()!.description }}</p>
+              <div class="room-summary-identity">
+                <div class="creator-avatar">{{ avatarInitials() }}</div>
+                <div class="room-summary-copy">
+                  <h1>{{ stream()!.title }}</h1>
+                  <p class="muted room-kicker">{{ stream()!.creatorName }} · {{ stream()!.description }}</p>
+                </div>
               </div>
               <div class="room-status-pills room-status-pills-compact">
                 <span [class]="stream()!.isLive ? 'badge-live' : 'badge-offline'">{{ stream()!.isLive ? 'En directo' : 'Offline' }}</span>
@@ -191,7 +197,7 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
 
             <div class="chat-messages">
               <article class="chat-message" *ngFor="let message of messages()">
-                <strong>{{ message.authorName }}</strong>
+                <span class="chat-author">{{ message.authorName }}</span>
                 <p>{{ message.body }}</p>
               </article>
             </div>
@@ -216,13 +222,21 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
           <section class="panel-card" *ngIf="authApi.isAuthenticated()">
             <div class="chat-header">
               <h2 class="mini-title" style="margin: 0;">Wallet</h2>
-              <span class="viewer-pill">{{ wallet()?.balance ?? 0 }} tokens</span>
             </div>
 
-            <div class="studio-actions" style="margin-top: 12px;">
-              <button type="button" class="text-link" (click)="addDevCredit()">Recarga dev +250</button>
-              <button type="button" class="text-link" (click)="tip(25)">Tip 25</button>
-              <button type="button" class="text-link" (click)="tip(100)">Tip 100</button>
+            <div class="token-balance-display" style="margin-top: 12px;">
+              <strong>{{ wallet()?.balance ?? 0 }}</strong>
+              <span class="token-balance-label">tokens</span>
+            </div>
+
+            <div class="tip-row">
+              <button type="button" class="tip-btn" (click)="tip(25)">Tip 25</button>
+              <button type="button" class="tip-btn" (click)="tip(50)">Tip 50</button>
+              <button type="button" class="tip-btn" (click)="tip(100)">Tip 100</button>
+            </div>
+
+            <div class="studio-actions" style="margin-top: 10px;">
+              <button type="button" class="action-button action-button-ghost" style="font-size: 0.76rem;" (click)="addDevCredit()">Recarga dev +250</button>
             </div>
 
             <ul class="helper-list" style="margin-top: 14px;" *ngIf="wallet()?.recentTransactions?.length">
@@ -232,12 +246,12 @@ const DEFAULT_PROFILE: CreatorPublicProfile = {
             </ul>
           </section>
 
-          <section class="panel-card">
+          <section class="panel-card premium-info-panel">
             <h2 class="mini-title">Acceso premium</h2>
-            <ul class="helper-list">
-              <li>Privado por tokens o membresia mensual.</li>
+            <ul class="premium-feature-list">
+              <li>Directo privado por tokens o membresía mensual.</li>
               <li>Chat configurable por nivel de acceso.</li>
-              <li>Base preparada para ampliar a tippers, members y toys.</li>
+              <li>Base preparada para tippers, members y toys.</li>
             </ul>
           </section>
 
@@ -267,6 +281,14 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   readonly rankingScore = computed(() => 120 + this.publicProfile().languages.length * 12);
   readonly canWatch = computed(() => this.stream()?.viewerAccess?.canWatch ?? true);
   readonly canChat = computed(() => this.stream()?.viewerAccess?.canChat ?? false);
+  readonly avatarInitials = computed(() => {
+    const name = this.publicProfile().displayName || 'C';
+    return name
+      .split(' ')
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
+  });
 
   async ngOnInit() {
     const slug = this.route.snapshot.paramMap.get('slug');
