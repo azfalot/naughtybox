@@ -8,6 +8,13 @@ type MediaPreview = {
   price?: string;
 };
 
+const FOLLOWERS_BASE = 1800;
+const FOLLOWERS_PER_CATEGORY = 240;
+const VIEWS_BASE = 12000;
+const VIEWS_PER_SUBCATEGORY = 750;
+const RANKING_BASE = 120;
+const RANKING_PER_LANGUAGE = 12;
+
 @Component({
   selector: 'app-creator-profile',
   standalone: true,
@@ -105,6 +112,7 @@ type MediaPreview = {
 export class CreatorProfileComponent {
   @Input({ required: true }) profile!: CreatorPublicProfile;
 
+  // Placeholder preview data – replace with profile-specific content once the media API is available.
   readonly storePreview: MediaPreview[] = [
     { title: 'Wishlist premium', type: 'store', price: '12 tokens' },
     { title: 'Private pack', type: 'store', price: '45 tokens' },
@@ -126,15 +134,15 @@ export class CreatorProfileComponent {
   }
 
   get followersCount(): number {
-    return 1800 + (this.profile?.categories.length ?? 0) * 240;
+    return FOLLOWERS_BASE + (this.profile?.categories.length ?? 0) * FOLLOWERS_PER_CATEGORY;
   }
 
   get profileViewsCount(): number {
-    return 12000 + (this.profile?.subcategories.length ?? 0) * 750;
+    return VIEWS_BASE + (this.profile?.subcategories.length ?? 0) * VIEWS_PER_SUBCATEGORY;
   }
 
   get rankingScore(): number {
-    return 120 + (this.profile?.languages.length ?? 0) * 12;
+    return RANKING_BASE + (this.profile?.languages.length ?? 0) * RANKING_PER_LANGUAGE;
   }
 
   get hasSocialLinks(): boolean {
