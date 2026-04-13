@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { BillingConfig, CreatorDashboard, WalletSummary } from '@naughtybox/shared-types';
+import { BillingConfig, CreatorDashboard, resolveStreamRoomPresence, WalletSummary } from '@naughtybox/shared-types';
 import { AuthApiService } from '../../shared/services/auth-api.service';
 import { CreatorApiService } from '../../shared/services/creator-api.service';
 import { WalletApiService } from '../../shared/services/wallet-api.service';
@@ -27,7 +27,10 @@ import { WalletApiService } from '../../shared/services/wallet-api.service';
           <section class="panel-card">
             <p class="eyebrow">Creator Studio</p>
             <h1 class="lobby-title">Tu sala y tu identidad</h1>
-            <p class="muted">Configura perfil, categorias, redes, biografia y sala publica. Esto alimentara filtros, rankings, follows y el perfil comercial.</p>
+            <p class="muted">
+              Configura perfil, categorias, redes, biografia y sala publica. Esto alimentara filtros, rankings, follows
+              y el perfil comercial.
+            </p>
           </section>
 
           <section class="panel-card">
@@ -35,7 +38,10 @@ import { WalletApiService } from '../../shared/services/wallet-api.service';
             <form class="studio-form" (submit)="saveProfile($event)">
               <label>
                 <span>Display name</span>
-                <input name="displayName" [value]="dashboard()?.profile?.displayName ?? dashboard()?.user?.username ?? ''" />
+                <input
+                  name="displayName"
+                  [value]="dashboard()?.profile?.displayName ?? dashboard()?.user?.username ?? ''"
+                />
               </label>
               <label>
                 <span>Slug</span>
@@ -142,11 +148,21 @@ import { WalletApiService } from '../../shared/services/wallet-api.service';
               </label>
               <label>
                 <span>Precio privado</span>
-                <input name="privateEntryTokens" type="number" min="1" [value]="dashboard()?.room?.privateEntryTokens ?? 120" />
+                <input
+                  name="privateEntryTokens"
+                  type="number"
+                  min="1"
+                  [value]="dashboard()?.room?.privateEntryTokens ?? 120"
+                />
               </label>
               <label>
                 <span>Precio mensual</span>
-                <input name="memberMonthlyTokens" type="number" min="1" [value]="dashboard()?.room?.memberMonthlyTokens ?? 450" />
+                <input
+                  name="memberMonthlyTokens"
+                  type="number"
+                  min="1"
+                  [value]="dashboard()?.room?.memberMonthlyTokens ?? 450"
+                />
               </label>
               <label class="studio-span">
                 <span>Descripcion</span>
@@ -171,7 +187,7 @@ import { WalletApiService } from '../../shared/services/wallet-api.service';
               </div>
               <div>
                 <p class="muted stat-label">Live</p>
-                <strong>{{ dashboard()?.stream?.isLive ? 'online' : 'offline' }}</strong>
+                <strong>{{ streamPresenceLabel() }}</strong>
               </div>
             </div>
           </section>
@@ -199,7 +215,8 @@ import { WalletApiService } from '../../shared/services/wallet-api.service';
           <section class="panel-card" *ngIf="billing() as billing">
             <h2 class="mini-title">Tokens y pagos</h2>
             <p class="muted">
-              La base ya soporta wallet, ledger y propinas. Ahora mismo todo corre en modo {{ billing.mode }} para validar la plataforma sin pagos reales.
+              La base ya soporta wallet, ledger y propinas. Ahora mismo todo corre en modo {{ billing.mode }} para
+              validar la plataforma sin pagos reales.
             </p>
             <div class="creator-grid">
               <div>
@@ -334,8 +351,14 @@ export class CreatorStudioPageComponent implements OnInit {
         title: (form.elements.namedItem('title') as HTMLInputElement)?.value ?? '',
         description: (form.elements.namedItem('description') as HTMLTextAreaElement)?.value ?? '',
         tags: this.splitTags((form.elements.namedItem('tags') as HTMLInputElement)?.value ?? ''),
-        accessMode: ((form.elements.namedItem('accessMode') as HTMLInputElement)?.value ?? 'public') as 'public' | 'premium' | 'private',
-        chatMode: ((form.elements.namedItem('chatMode') as HTMLInputElement)?.value ?? 'registered') as 'registered' | 'members' | 'tippers',
+        accessMode: ((form.elements.namedItem('accessMode') as HTMLInputElement)?.value ?? 'public') as
+          | 'public'
+          | 'premium'
+          | 'private',
+        chatMode: ((form.elements.namedItem('chatMode') as HTMLInputElement)?.value ?? 'registered') as
+          | 'registered'
+          | 'members'
+          | 'tippers',
         privateEntryTokens: Number((form.elements.namedItem('privateEntryTokens') as HTMLInputElement)?.value || 120),
         memberMonthlyTokens: Number((form.elements.namedItem('memberMonthlyTokens') as HTMLInputElement)?.value || 450),
       });
@@ -367,6 +390,16 @@ export class CreatorStudioPageComponent implements OnInit {
 
   private async loadWallet() {
     this.wallet.set(await this.walletApi.getWallet());
+  }
+
+  streamPresenceLabel() {
+    const presence = resolveStreamRoomPresence({
+      isLive: this.dashboard()?.stream?.isLive,
+      activeSessionStatus: this.dashboard()?.stream?.activeSession?.status ?? null,
+    });
+    if (presence === 'live') return 'online';
+    if (presence === 'preparing') return 'preparing';
+    return 'offline';
   }
 
   private splitTags(value: string) {
