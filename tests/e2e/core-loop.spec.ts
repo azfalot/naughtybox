@@ -5,6 +5,7 @@ const roomSlug = 'playwright-core-loop';
 const username = 'playwrightcreator';
 const email = 'playwright.creator@naughtybox.local';
 const password = 'Naughtybox123!';
+let creatorToken = '';
 
 test.beforeAll(async ({ playwright }) => {
   const request = await playwright.request.newContext({
@@ -19,7 +20,7 @@ test.beforeAll(async ({ playwright }) => {
     },
   });
 
-  const token = registerResponse.ok()
+  creatorToken = registerResponse.ok()
     ? (await registerResponse.json()).token
     : await (async () => {
         const loginResponse = await request.post('/auth/login', {
@@ -35,7 +36,7 @@ test.beforeAll(async ({ playwright }) => {
 
   await request.put('/creator/profile', {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${creatorToken}`,
     },
     data: {
       displayName: 'Playwright Creator',
@@ -49,7 +50,7 @@ test.beforeAll(async ({ playwright }) => {
 
   await request.put('/creator/room', {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${creatorToken}`,
     },
     data: {
       title: 'Playwright Core Loop',
@@ -63,12 +64,33 @@ test.beforeAll(async ({ playwright }) => {
   await request.dispose();
 });
 
-test('homepage loads and room page shows a deterministic stream state', async ({ page }) => {
-  await page.goto('/?section=home');
-  await expect(page.getByText('Home')).toBeVisible();
+test('room state moves deterministically from offline to preparing and back', async ({ page, playwright }) => {
+  const request = await playwright.request.newContext({
+    baseURL: backendBaseUrl,
+    extraHTTPHeaders: {
+      Authorization: `Bearer ${creatorToken}`,
+    },
+  });
 
   await page.goto(`/streams/${roomSlug}`);
   await expect(page.getByRole('heading', { name: 'Playwright Core Loop' })).toBeVisible();
-  await expect(page.getByText(/Offline|Preparando|En directo/)).toBeVisible();
+  await expect(page.getByTestId('stream-state-offline')).toBeVisible();
+  await expect(page.getByTestId('stream-status-badge')).toHaveText('Offline');
+
+  const startResponse = await request.put('/creator/broadcast/start');
+  expect(startResponse.ok()).toBeTruthy();
+
+  await page.reload();
+  await expect(page.getByTestId('stream-state-preparing')).toBeVisible();
+  await expect(page.getByTestId('stream-status-badge')).toHaveText('Preparando');
   await expect(page.getByText(/Chat en vivo/)).toBeVisible();
+
+  const stopResponse = await request.put('/creator/broadcast/stop');
+  expect(stopResponse.ok()).toBeTruthy();
+
+  await page.reload();
+  await expect(page.getByTestId('stream-state-offline')).toBeVisible();
+  await expect(page.getByTestId('stream-status-badge')).toHaveText('Offline');
+
+  await request.dispose();
 });

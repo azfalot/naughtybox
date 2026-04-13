@@ -19,7 +19,7 @@ import { StreamPlayerComponent } from '../../../ui/media/stream-player.component
         [muted]="true"
       />
 
-      <div *ngIf="showPreparingState && stream" class="offline-state">
+      <div *ngIf="showPreparingState && stream" class="offline-state" data-testid="stream-state-preparing">
         <div class="offline-copy">
           <p class="eyebrow">Preparando</p>
           <h2 class="mini-title">La sala está iniciando la emisión</h2>
@@ -33,7 +33,7 @@ import { StreamPlayerComponent } from '../../../ui/media/stream-player.component
         </div>
       </div>
 
-      <div *ngIf="showOfflineState && stream" class="offline-state">
+      <div *ngIf="showOfflineState && stream" class="offline-state" data-testid="stream-state-offline">
         <div class="offline-copy">
           <p class="eyebrow">Offline</p>
           <h2 class="mini-title">Ahora mismo no está emitiendo</h2>
@@ -47,7 +47,7 @@ import { StreamPlayerComponent } from '../../../ui/media/stream-player.component
         </div>
       </div>
 
-      <div *ngIf="showAccessGate && stream" class="access-gate">
+      <div *ngIf="showAccessGate && stream" class="access-gate" data-testid="stream-state-access-gate">
         <p class="eyebrow">Acceso</p>
         <h2 class="mini-title">{{ accessHeadline }}</h2>
         <p class="muted">{{ accessCopy }}</p>

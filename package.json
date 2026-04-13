@@ -18,7 +18,7 @@
     "build:ci": "npm run build -w @naughtybox/shared-types && npm run build -w @naughtybox/backend && npm run build -w @naughtybox/streaming && npm run build -w @naughtybox/frontend",
     "clean:dist": "rimraf apps/backend/dist apps/frontend/dist packages/shared-types/dist",
     "refresh:runtime": "powershell -ExecutionPolicy Bypass -File .\\scripts\\refresh-runtime.ps1",
-    "test:units": "node --test scripts/unit-revenue-split.mjs scripts/unit-rate-limit.mjs scripts/unit-room-access-policy.mjs",
+    "test:units": "node --test scripts/unit-stream-room-presence.mjs",
     "test:integration": "npm run test:smokes",
     "test:e2e": "playwright test",
     "test:smokes": "powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-current-state.ps1 && powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-security.ps1 && powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-creator-verification.ps1 && powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-broadcast-session.ps1 && powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-provider-webhooks.ps1 && powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-payout-rail.ps1",

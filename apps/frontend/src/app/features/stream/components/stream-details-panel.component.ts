@@ -1,6 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CreatorPublicProfile, Goal, StreamDetails, TicketedEvent } from '@naughtybox/shared-types';
+import {
+  CreatorPublicProfile,
+  Goal,
+  resolveStreamRoomPresence,
+  StreamDetails,
+  TicketedEvent,
+} from '@naughtybox/shared-types';
 import { AppIconComponent } from '../../../ui/icons/app-icon.component';
 
 @Component({
@@ -15,7 +21,7 @@ import { AppIconComponent } from '../../../ui/icons/app-icon.component';
           <p class="muted room-kicker">{{ stream.creatorName }} · {{ stream.description }}</p>
         </div>
         <div class="room-status-pills room-status-pills-compact">
-          <span [class]="statusBadgeClass(stream)">{{ statusLabel(stream) }}</span>
+          <span [class]="statusBadgeClass(stream)" data-testid="stream-status-badge">{{ statusLabel(stream) }}</span>
           <span class="viewer-pill">{{ stream.currentViewers || 0 }} viendo</span>
           <span class="viewer-pill">{{ accessModeLabel(stream.accessMode) }}</span>
           <span class="viewer-pill">{{ playbackModeLabel }}</span>
@@ -170,14 +176,22 @@ export class StreamDetailsPanelComponent {
   }
 
   statusLabel(stream: StreamDetails) {
-    if (stream.isLive) return 'En directo';
-    if (stream.activeSession?.status === 'preparing') return 'Preparando';
+    const presence = resolveStreamRoomPresence({
+      isLive: stream.isLive,
+      activeSessionStatus: stream.activeSession?.status ?? null,
+    });
+    if (presence === 'live') return 'En directo';
+    if (presence === 'preparing') return 'Preparando';
     return 'Offline';
   }
 
   statusBadgeClass(stream: StreamDetails) {
-    if (stream.isLive) return 'badge-live';
-    if (stream.activeSession?.status === 'preparing') return 'badge-private';
+    const presence = resolveStreamRoomPresence({
+      isLive: stream.isLive,
+      activeSessionStatus: stream.activeSession?.status ?? null,
+    });
+    if (presence === 'live') return 'badge-live';
+    if (presence === 'preparing') return 'badge-private';
     return 'badge-offline';
   }
 

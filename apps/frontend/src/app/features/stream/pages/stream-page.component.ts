@@ -6,6 +6,7 @@ import {
   CreatorPublicProfile,
   Goal,
   ReportReason,
+  resolveStreamRoomPresence,
   StreamDetails,
   StreamSummary,
   TicketedEvent,
@@ -56,10 +57,12 @@ import { DEFAULT_PROFILE, STORE_PREVIEW, StreamProfileTab, VIDEO_PREVIEW } from 
           <app-stream-stage
             [stream]="stream()"
             [showPlayer]="showPlayer()"
+            [showPreparingState]="showPreparingState()"
             [showOfflineState]="showOfflineState()"
             [showAccessGate]="showAccessGate()"
             [playbackUrl]="playbackUrl()"
             [playbackMode]="playbackMode()"
+            [preparingCopy]="preparingCopy()"
             [offlineCopy]="offlineCopy()"
             [accessHeadline]="accessHeadline()"
             [accessCopy]="accessCopy()"
@@ -167,10 +170,18 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   readonly followersCount = computed(() => 1800 + this.publicProfile().categories.length * 240);
   readonly profileViewsCount = computed(() => 12000 + this.publicProfile().subcategories.length * 750);
   readonly rankingScore = computed(() => 120 + this.publicProfile().languages.length * 12);
+  readonly roomPresence = computed(() =>
+    resolveStreamRoomPresence({
+      isLoading: this.loading(),
+      isLive: this.stream()?.isLive,
+      activeSessionStatus: this.stream()?.activeSession?.status ?? null,
+    }),
+  );
   readonly canWatch = computed(() => this.stream()?.viewerAccess?.canWatch ?? true);
-  readonly showOfflineState = computed(() => Boolean(this.stream() && !this.stream()!.isLive));
-  readonly showAccessGate = computed(() => Boolean(this.stream()?.isLive && !this.canWatch()));
-  readonly showPlayer = computed(() => Boolean(this.stream()?.isLive && this.canWatch()));
+  readonly showPreparingState = computed(() => this.roomPresence() === 'preparing');
+  readonly showOfflineState = computed(() => this.roomPresence() === 'offline');
+  readonly showAccessGate = computed(() => this.roomPresence() === 'live' && !this.canWatch());
+  readonly showPlayer = computed(() => this.roomPresence() === 'live' && this.canWatch());
   readonly canChat = computed(() =>
     Boolean(this.stream()?.isLive && this.stream()?.activeSession && this.stream()?.viewerAccess?.canChat),
   );
@@ -268,6 +279,11 @@ export class StreamPageComponent implements OnInit, OnDestroy {
       return `La sala esta desconectada. Mientras vuelve al aire, puedes revisar el perfil, la bio y los enlaces de ${profile.displayName}.`;
     }
     return 'La sala esta desconectada. Cuando vuelva a emitir, aqui aparecera el directo y se activara el chat de la sesion.';
+  }
+
+  preparingCopy() {
+    const profile = this.publicProfile();
+    return `La cabina de ${profile.displayName} ya ha abierto sesion, pero todavia no hay playback publico confirmado. En cuanto llegue senal real, la sala pasara a En directo.`;
   }
 
   accessCopy() {

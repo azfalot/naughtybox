@@ -2,7 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import { ChatMessage, CreatorDashboard, TokenTransaction, WalletSummary } from '@naughtybox/shared-types';
+import {
+  ChatMessage,
+  CreatorDashboard,
+  resolveStreamRoomPresence,
+  TokenTransaction,
+  WalletSummary,
+} from '@naughtybox/shared-types';
 import { AuthApiService } from '../../../services/auth-api.service';
 import { ChatApiService } from '../../../services/chat-api.service';
 import { CreatorApiService } from '../../../services/creator-api.service';
@@ -85,7 +91,7 @@ import { AppIconComponent } from '../../../ui/icons/app-icon.component';
               </div>
               <div>
                 <p class="muted stat-label">Directo</p>
-                <strong>{{ dashboard.stream?.isLive ? 'online' : 'offline' }}</strong>
+                <strong>{{ streamPresenceLabel(dashboard) }}</strong>
               </div>
               <div>
                 <p class="muted stat-label">Sesion</p>
@@ -379,5 +385,15 @@ export class BroadcastBoothPageComponent implements OnInit, OnDestroy {
 
     const url = `${window.location.protocol}//${window.location.hostname}:8889/live/${dashboard.room.streamKey}/publish`;
     this.publishUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
+  }
+
+  streamPresenceLabel(dashboard: CreatorDashboard) {
+    const presence = resolveStreamRoomPresence({
+      isLive: dashboard.stream?.isLive,
+      activeSessionStatus: dashboard.stream?.activeSession?.status ?? null,
+    });
+    if (presence === 'live') return 'online';
+    if (presence === 'preparing') return 'preparing';
+    return 'offline';
   }
 }

@@ -96,8 +96,15 @@ export interface CreatorRoom {
   updatedAt: string;
 }
 
-export type StreamAccessMode = 'public' | 'premium' | 'private';
-export type ChatAccessMode = 'registered' | 'members' | 'tippers';
+export type StreamAccessMode =
+  | 'public'
+  | 'premium'
+  | 'private'
+  | 'premium_membership_required'
+  | 'ticketed_event'
+  | 'private_exclusive';
+export type ChatAccessMode = 'registered' | 'members' | 'tippers' | 'ticket_holders' | 'private_only';
+export type StreamRoomPresence = 'loading' | 'preparing' | 'live' | 'offline';
 
 export interface StreamSummary {
   id: string;
@@ -122,6 +129,8 @@ export interface StreamSummary {
 
 export interface StreamPlayback {
   hlsUrl: string;
+  webrtcUrl?: string;
+  preferredMode?: 'hls' | 'webrtc';
   shareUrl: string;
 }
 
@@ -134,8 +143,61 @@ export interface StreamPublish {
 export interface StreamDetails extends Omit<StreamSummary, 'playbackHlsUrl'> {
   playback: StreamPlayback;
   publish: StreamPublish;
+  roomRules?: string;
   creatorProfile?: CreatorPublicProfile;
   viewerAccess?: ViewerRoomAccess;
+  isOwnerView?: boolean;
+  activeSession?: {
+    id: string;
+    status?: string;
+  } | null;
+  goals?: Array<{
+    id: string;
+    status: string;
+    title: string;
+    description: string;
+    actionLabel: string;
+    targetTokens: number;
+    currentTokens: number;
+    queuePosition: number;
+  }>;
+  activeEvent?: {
+    id: string;
+    status: string;
+    title: string;
+    description?: string;
+    ticketPrice: number;
+    startsAt?: string;
+    allowMemberAccess?: boolean;
+  } | null;
+  privateShowRequest?: {
+    requesterUsername: string;
+    status: string;
+    tokensPerMinute: number;
+  } | null;
+  memberships?: Array<{ roomSlug: string; isActive: boolean; expiresAt?: string }>;
+}
+
+export interface ResolveStreamRoomPresenceInput {
+  isLoading?: boolean;
+  isLive?: boolean;
+  activeSessionStatus?: string | null;
+}
+
+export function resolveStreamRoomPresence(input: ResolveStreamRoomPresenceInput): StreamRoomPresence {
+  if (input.isLoading) {
+    return 'loading';
+  }
+
+  if (input.isLive || input.activeSessionStatus === 'live') {
+    return 'live';
+  }
+
+  if (input.activeSessionStatus === 'preparing') {
+    return 'preparing';
+  }
+
+  return 'offline';
 }
 
 export interface ViewerRoomAccess {
@@ -147,6 +209,8 @@ export interface ViewerRoomAccess {
   canChat: boolean;
   isMember: boolean;
   hasPrivateAccess: boolean;
+  hasEventTicket?: boolean;
+  isPrivateRequester?: boolean;
 }
 
 export interface FollowedCreator {
