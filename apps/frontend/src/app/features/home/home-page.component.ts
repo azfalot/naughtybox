@@ -66,8 +66,14 @@ const REAL_STREAM_META: Record<string, StreamMeta> = {
       <section *ngIf="loading()" class="page-state">Cargando salas...</section>
       <section *ngIf="error()" class="page-state">{{ error() }}</section>
 
-      <section *ngIf="!loading() && !error() && filteredStreams().length > 0" class="catalog-grid">
-        <button type="button" class="catalog-card panel-card" *ngFor="let stream of filteredStreams()" (click)="enterRoom(stream)">
+      <section *ngIf="!loading() && !error() && filteredStreams().length > 0" class="catalog-grid" data-testid="lobby-grid">
+        <button
+          type="button"
+          class="catalog-card panel-card"
+          *ngFor="let stream of filteredStreams()"
+          [attr.data-testid]="'stream-card-' + stream.slug"
+          (click)="enterRoom(stream)"
+        >
           <div class="catalog-thumb">
             <app-stream-player
               *ngIf="stream.isLive"

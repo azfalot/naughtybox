@@ -9,7 +9,7 @@ import { AppIconComponent } from '../../../ui/icons/app-icon.component';
   standalone: true,
   imports: [CommonModule, RouterLink, AppIconComponent],
   template: `
-    <aside class="stream-sidebar" *ngIf="stream">
+    <aside class="stream-sidebar" *ngIf="stream" data-testid="stream-sidebar">
       <section class="panel-card chat-panel">
         <div class="chat-header">
           <h2 class="mini-title" style="margin: 0;">Chat en vivo</h2>
