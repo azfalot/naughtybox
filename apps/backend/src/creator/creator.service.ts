@@ -56,6 +56,15 @@ type CreatorRoomRow = {
   updated_at: string;
 };
 
+type StreamSessionRow = {
+  id: string;
+  room_slug: string;
+  status: 'preparing' | 'live' | 'ended';
+  source: 'browser' | 'obs' | 'system';
+  started_at: string;
+  ended_at: string | null;
+};
+
 @Injectable()
 export class CreatorService {
   constructor(
@@ -235,12 +244,75 @@ export class CreatorService {
     return this.mapRoom(result.rows[0]);
   }
 
+  async startBroadcast(userId: string) {
+    const room = await this.getRoomForUser(userId);
+    const active = await this.database.query<StreamSessionRow>(
+      `SELECT id, room_slug, status, source, started_at, ended_at
+       FROM stream_sessions
+       WHERE room_slug = $1 AND status IN ('preparing', 'live')
+       ORDER BY started_at DESC
+       LIMIT 1`,
+      [room.slug],
+    );
+
+    if (active.rows[0]) {
+      return {
+        roomSlug: room.slug,
+        sessionId: active.rows[0].id,
+        status: active.rows[0].status,
+      };
+    }
+
+    const created = await this.database.query<StreamSessionRow>(
+      `INSERT INTO stream_sessions (id, room_slug, status, source, started_at, ended_at)
+       VALUES ($1, $2, 'preparing', 'browser', NOW(), NULL)
+       RETURNING id, room_slug, status, source, started_at, ended_at`,
+      [randomUUID(), room.slug],
+    );
+
+    return {
+      roomSlug: room.slug,
+      sessionId: created.rows[0].id,
+      status: created.rows[0].status,
+    };
+  }
+
+  async stopBroadcast(userId: string) {
+    const room = await this.getRoomForUser(userId);
+    const result = await this.database.query<StreamSessionRow>(
+      `UPDATE stream_sessions
+       SET status = 'ended', ended_at = NOW()
+       WHERE room_slug = $1 AND status IN ('preparing', 'live')
+       RETURNING id, room_slug, status, source, started_at, ended_at`,
+      [room.slug],
+    );
+
+    return {
+      roomSlug: room.slug,
+      stoppedSessions: result.rows.length,
+    };
+  }
+
   private async findProfileByUserId(userId: string): Promise<CreatorProfile | null> {
     const result = await this.database.query<CreatorProfileRow>(
       `SELECT * FROM creator_profiles WHERE user_id = $1 LIMIT 1`,
       [userId],
     );
     return result.rows[0] ? this.mapProfile(result.rows[0]) : null;
+  }
+
+  private async getRoomForUser(userId: string): Promise<CreatorRoom> {
+    const profile = await this.findProfileByUserId(userId);
+    if (!profile) {
+      throw new BadRequestException('Create your creator profile before starting a broadcast.');
+    }
+
+    const room = await this.findRoomByProfileId(profile.id);
+    if (!room) {
+      throw new BadRequestException('Create your creator room before starting a broadcast.');
+    }
+
+    return room;
   }
 
   private async findRoomByProfileId(profileId: string): Promise<CreatorRoom | null> {

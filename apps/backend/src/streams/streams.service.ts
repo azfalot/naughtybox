@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatorPublicProfile, StreamDetails, StreamSummary } from '@naughtybox/shared-types';
+import { randomUUID } from 'node:crypto';
 import { DatabaseService } from '../database/database.service';
 import { FollowsService } from '../follows/follows.service';
 import { RoomAccessService } from '../room-access/room-access.service';
@@ -35,6 +36,13 @@ type StreamRow = {
   x_url: string | null;
   onlyfans_url: string | null;
   website_url: string | null;
+};
+
+type StreamSessionRow = {
+  id: string;
+  room_slug: string;
+  status: 'preparing' | 'live' | 'ended';
+  source: 'browser' | 'obs' | 'system';
 };
 
 @Injectable()
@@ -100,8 +108,15 @@ export class StreamsService {
     }
 
     const isLive = (await this.fetchLiveStatus([row.room_slug])).get(row.room_slug) ?? false;
+    const activeSession = await this.syncAndGetActiveSession(row.room_slug, isLive);
     const followMap = await this.followsService.getFollowMap(viewerId, [row.room_slug]);
-    return this.toDetails(row, isLive, followMap.get(row.room_slug) ?? false, await this.roomAccessService.getViewerAccess(row.room_slug, viewerId));
+    return this.toDetails(
+      row,
+      isLive,
+      followMap.get(row.room_slug) ?? false,
+      await this.roomAccessService.getViewerAccess(row.room_slug, viewerId),
+      activeSession,
+    );
   }
 
   async getBillingConfig() {
@@ -215,7 +230,13 @@ export class StreamsService {
     };
   }
 
-  private toDetails(row: StreamRow, isLive: boolean, following = false, viewerAccess?: StreamDetails['viewerAccess']): StreamDetails {
+  private toDetails(
+    row: StreamRow,
+    isLive: boolean,
+    following = false,
+    viewerAccess?: StreamDetails['viewerAccess'],
+    activeSession?: StreamDetails['activeSession'],
+  ): StreamDetails {
     const publicApiBaseUrl = process.env.PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
     const mediaBaseUrl = process.env.MEDIA_BASE_URL ?? 'http://localhost:4200/media';
     const publishBaseUrl = process.env.RTMP_PUBLISH_URL ?? 'rtmp://localhost:1935/live';
@@ -233,6 +254,52 @@ export class StreamsService {
       },
       creatorProfile: this.toPublicProfile(row),
       viewerAccess,
+      activeSession: activeSession ?? null,
+    };
+  }
+
+  private async syncAndGetActiveSession(roomSlug: string, isLive: boolean): Promise<StreamDetails['activeSession']> {
+    const active = await this.database.query<StreamSessionRow>(
+      `SELECT id, room_slug, status, source
+       FROM stream_sessions
+       WHERE room_slug = $1 AND status IN ('preparing', 'live')
+       ORDER BY started_at DESC
+       LIMIT 1`,
+      [roomSlug],
+    );
+
+    const current = active.rows[0];
+
+    if (isLive) {
+      if (!current) {
+        const created = await this.database.query<StreamSessionRow>(
+          `INSERT INTO stream_sessions (id, room_slug, status, source, started_at, ended_at)
+           VALUES ($1, $2, 'live', 'system', NOW(), NULL)
+           RETURNING id, room_slug, status, source`,
+          [randomUUID(), roomSlug],
+        );
+        return this.mapActiveSession(created.rows[0]);
+      }
+
+      if (current.status !== 'live') {
+        const updated = await this.database.query<StreamSessionRow>(
+          `UPDATE stream_sessions
+           SET status = 'live'
+           WHERE id = $1
+           RETURNING id, room_slug, status, source`,
+          [current.id],
+        );
+        return this.mapActiveSession(updated.rows[0]);
+      }
+    }
+
+    return current ? this.mapActiveSession(current) : null;
+  }
+
+  private mapActiveSession(row: StreamSessionRow): NonNullable<StreamDetails['activeSession']> {
+    return {
+      id: row.id,
+      status: row.status,
     };
   }
 
