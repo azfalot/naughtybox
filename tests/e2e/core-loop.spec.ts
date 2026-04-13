@@ -140,7 +140,7 @@ test('viewer can enter a room from the lobby and see the room shell', async ({ p
   await page.getByTestId(`stream-card-${roomSlug}`).click();
 
   await expect(page).toHaveURL(new RegExp(`/streams/${roomSlug}$`));
-  await expect(page.getByRole('heading', { name: 'Playwright Core Loop' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Playwright Core Loop', level: 1 })).toBeVisible();
   await expect(page.getByTestId('stream-status-badge')).toBeVisible();
   await expect(page.getByTestId('stream-sidebar')).toBeVisible();
 });
@@ -165,7 +165,7 @@ test('room state moves deterministically from offline to preparing and back', as
   ]);
 
   await page.goto(`/streams/${roomSlug}`);
-  await expect(page.getByRole('heading', { name: 'Playwright Core Loop' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Playwright Core Loop', level: 1 })).toBeVisible();
   await expect(page.getByTestId('stream-state-offline')).toBeVisible();
   await expect(page.getByTestId('stream-status-badge')).toHaveText('Offline');
   await expect(page.getByTestId('stream-sidebar')).toBeVisible();

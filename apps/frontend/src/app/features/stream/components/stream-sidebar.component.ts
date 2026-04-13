@@ -12,8 +12,11 @@ import { AppIconComponent } from '../../../ui/icons/app-icon.component';
     <aside class="stream-sidebar" *ngIf="stream" data-testid="stream-sidebar">
       <section class="panel-card chat-panel">
         <div class="chat-header">
-          <h2 class="mini-title" style="margin: 0;">Chat en vivo</h2>
-          <span class="muted">{{ chatModeText }}</span>
+          <div>
+            <p class="eyebrow">Conversation lounge</p>
+            <h2 class="mini-title" style="margin: 0;">Chat en vivo</h2>
+          </div>
+          <span class="viewer-pill">{{ chatModeText }}</span>
         </div>
         <div class="chat-messages">
           <article class="chat-message" *ngFor="let message of messages">
@@ -63,7 +66,10 @@ import { AppIconComponent } from '../../../ui/icons/app-icon.component';
 
       <section class="panel-card" *ngIf="authenticated">
         <div class="chat-header">
-          <h2 class="mini-title" style="margin: 0;">Wallet</h2>
+          <div>
+            <p class="eyebrow">Support the room</p>
+            <h2 class="mini-title" style="margin: 0;">Wallet</h2>
+          </div>
           <span class="viewer-pill token-pill"><span class="token-dot">◉</span>{{ wallet?.balance ?? 0 }} NC</span>
         </div>
         <div class="tip-controls" style="margin-top: 12px;">
@@ -128,6 +134,7 @@ import { AppIconComponent } from '../../../ui/icons/app-icon.component';
       </section>
 
       <section class="panel-card">
+        <p class="eyebrow">Room modes</p>
         <h2 class="mini-title">Acceso premium</h2>
         <ul class="helper-list">
           <li>Public show: visible para todos, monetizado con tips y goals.</li>
