@@ -9,7 +9,7 @@ import {
   Report,
   ReviewCreatorVerificationRequest,
 } from '@naughtybox/shared-types';
-import { AuthApiService } from './auth-api.service';
+import { AuthApiService } from '../shared/services/auth-api.service';
 
 @Injectable({
   providedIn: 'root',

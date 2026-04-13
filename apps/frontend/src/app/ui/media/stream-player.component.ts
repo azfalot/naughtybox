@@ -36,6 +36,7 @@ import Hls from 'hls.js';
 })
 export class StreamPlayerComponent implements AfterViewInit, OnChanges, OnDestroy {
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly allowedIframeHosts = new Set(['localhost', '127.0.0.1']);
 
   @Input({ required: true }) src = '';
   @Input() mode: 'hls' | 'webrtc' = 'hls';
@@ -53,7 +54,13 @@ export class StreamPlayerComponent implements AfterViewInit, OnChanges, OnDestro
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['src'] && !changes['src'].firstChange) {
+    const shouldReattach =
+      (changes['src'] && !changes['src'].firstChange) ||
+      (changes['mode'] && !changes['mode'].firstChange) ||
+      (changes['muted'] && !changes['muted'].firstChange) ||
+      (changes['controls'] && !changes['controls'].firstChange);
+
+    if (shouldReattach) {
       this.attachSource();
     }
   }
@@ -69,12 +76,16 @@ export class StreamPlayerComponent implements AfterViewInit, OnChanges, OnDestro
     const video = this.videoRef?.nativeElement;
 
     if (!this.src) {
+      this.clearRetryTimer();
+      this.iframeSrc.set('');
       return;
     }
 
+    this.clearRetryTimer();
+
     if (this.mode === 'webrtc') {
       this.hls?.destroy();
-      this.iframeSrc.set(this.src);
+      this.iframeSrc.set(this.toTrustedIframeSrc(this.src));
       return;
     }
 
@@ -82,11 +93,6 @@ export class StreamPlayerComponent implements AfterViewInit, OnChanges, OnDestro
 
     if (!video) {
       return;
-    }
-
-    if (this.retryTimer) {
-      clearTimeout(this.retryTimer);
-      this.retryTimer = undefined;
     }
 
     this.hls?.destroy();
@@ -152,5 +158,28 @@ export class StreamPlayerComponent implements AfterViewInit, OnChanges, OnDestro
     void video.play().catch(() => {
       // Keep the player stable if autoplay is blocked; the user can still press play.
     });
+  }
+
+  private clearRetryTimer() {
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = undefined;
+    }
+  }
+
+  private toTrustedIframeSrc(src: string) {
+    try {
+      const url = new URL(src, window.location.origin);
+      const isHttp = url.protocol === 'http:' || url.protocol === 'https:';
+      const isAllowedHost = this.allowedIframeHosts.has(url.hostname) || url.hostname === window.location.hostname;
+
+      if (isHttp && isAllowedHost) {
+        return url.toString();
+      }
+    } catch {
+      return '';
+    }
+
+    return '';
   }
 }

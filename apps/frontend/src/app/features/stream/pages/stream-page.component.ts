@@ -167,6 +167,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   private routeSubscription?: { unsubscribe(): void };
   private refreshTimer?: ReturnType<typeof setInterval>;
   private activeSlug: string | null = null;
+  private initializeRequestId = 0;
 
   readonly stream = signal<StreamDetails | null>(null);
   readonly streamCatalog = signal<StreamSummary[]>([]);
@@ -325,7 +326,7 @@ export class StreamPageComponent implements OnInit, OnDestroy {
       return 'Entra con tu cuenta para acceder al chat y a los permisos de la sala.';
     }
     if (this.stream()?.roomRules && !this.stream()?.viewerAccess?.canChat) {
-      return 'Antes de escribir debes aceptar las reglas configuradas para esta sala.';
+      return 'No puedes escribir en este chat con la configuración actual de la sala y sus reglas.';
     }
     return `Este chat está configurado para ${this.chatModeLabel(this.stream()?.viewerAccess?.chatMode)}.`;
   }
@@ -610,7 +611,11 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   }
 
   private async initializeRoom(slug: string) {
+    const requestId = ++this.initializeRequestId;
+
     this.stopRealtime();
+    this.messages.set([]);
+    this.notice.set('');
     this.loading.set(true);
     this.error.set('');
 
@@ -618,28 +623,48 @@ export class StreamPageComponent implements OnInit, OnDestroy {
       // Critical path: stream details must succeed.
       await this.loadStream(slug);
     } catch (error) {
+      if (requestId !== this.initializeRequestId || slug !== this.activeSlug) {
+        return;
+      }
       this.error.set(error instanceof Error ? error.message : 'No se pudo cargar la sala.');
       this.loading.set(false);
       return;
     }
 
+    if (requestId !== this.initializeRequestId || slug !== this.activeSlug) {
+      return;
+    }
+
     // Non-critical loads — failures here don't block the stream room.
-    void this.loadCatalog().catch(() => undefined);
-    void this.loadChat(slug).catch(() => undefined);
+    void this.loadCatalog().catch((error) => this.handleOptionalLoadError('catálogo de streams', error));
+    void this.loadChat(slug).catch((error) => this.handleOptionalLoadError('historial de chat', error));
 
     if (this.authApi.isAuthenticated()) {
-      void this.loadWallet().catch(() => undefined);
+      void this.loadWallet().catch((error) => this.handleOptionalLoadError('wallet', error));
+
+      if (requestId !== this.initializeRequestId || slug !== this.activeSlug) {
+        return;
+      }
+
       this.connectChat(slug);
     } else {
       this.wallet.set(null);
     }
 
     this.refreshTimer = setInterval(() => {
-      void this.loadStream(slug, false).catch(() => undefined);
-      void this.loadChat(slug).catch(() => undefined);
+      if (slug !== this.activeSlug || requestId !== this.initializeRequestId) {
+        return;
+      }
+
+      void this.loadStream(slug, false).catch((error) => this.handleOptionalLoadError('refresh de stream', error));
+      void this.loadChat(slug).catch((error) => this.handleOptionalLoadError('refresh de chat', error));
     }, 8000);
 
     this.loading.set(false);
+  }
+
+  private handleOptionalLoadError(operation: string, error: unknown) {
+    console.warn(`[StreamPageComponent] Fallo en carga opcional: ${operation}.`, error);
   }
 
   private stopRealtime() {

@@ -38,7 +38,7 @@ import { AppIconComponent } from '../../../ui/icons/app-icon.component';
               <p class="muted" style="margin-bottom: 8px;">Reglas de la sala</p>
               <p>{{ stream.roomRules }}</p>
             </div>
-            <div class="studio-actions" *ngIf="stream.isLive">
+            <div class="studio-actions" *ngIf="!authenticated || showSubscribeAction || showBuyTicketAction">
               <a *ngIf="!authenticated" class="text-link" routerLink="/login">Entrar</a>
               <button
                 *ngIf="showSubscribeAction && authenticated"
