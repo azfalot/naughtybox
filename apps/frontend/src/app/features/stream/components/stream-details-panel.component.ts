@@ -14,6 +14,7 @@ type TicketedEvent = NonNullable<StreamDetails['activeEvent']>;
     <section class="panel-card room-summary room-summary-page" *ngIf="stream && profile">
       <div class="room-summary-head">
         <div class="room-summary-copy">
+          <p class="eyebrow">Room briefing</p>
           <h1>{{ stream.title }}</h1>
           <p class="muted room-kicker">{{ stream.creatorName }} · {{ stream.description }}</p>
         </div>
@@ -54,6 +55,24 @@ type TicketedEvent = NonNullable<StreamDetails['activeEvent']>;
           <p class="muted stat-label">Sesión</p>
           <strong>{{ sessionLabel(stream) }}</strong>
         </div>
+      </div>
+
+      <div class="room-premium-grid">
+        <article class="room-premium-card">
+          <p class="muted stat-label">Acceso</p>
+          <strong>{{ accessModeLongLabel(stream.accessMode) }}</strong>
+          <span>{{ accessModeSupportCopy(stream.accessMode) }}</span>
+        </article>
+        <article class="room-premium-card">
+          <p class="muted stat-label">Chat</p>
+          <strong>{{ chatModeLabel(stream.viewerAccess?.chatMode) }}</strong>
+          <span>{{ chatSupportCopy(stream.viewerAccess?.chatMode) }}</span>
+        </article>
+        <article class="room-premium-card">
+          <p class="muted stat-label">Monetización</p>
+          <strong>{{ monetizationLabel(stream) }}</strong>
+          <span>{{ monetizationSupportCopy(stream) }}</span>
+        </article>
       </div>
     </section>
 
@@ -164,12 +183,48 @@ export class StreamDetailsPanelComponent {
     return 'public';
   }
 
+  accessModeLongLabel(mode?: string) {
+    if (mode === 'premium_membership_required') return 'Membership premium';
+    if (mode === 'ticketed_event') return 'Evento con ticket';
+    if (mode === 'private_exclusive') return 'Private show';
+    return 'Acceso público';
+  }
+
+  accessModeSupportCopy(mode?: string) {
+    if (mode === 'premium_membership_required') return 'Entrada recurrente para watch + chat sin ruido visual.';
+    if (mode === 'ticketed_event') return 'La sala prioriza conversión puntual con acceso explícito.';
+    if (mode === 'private_exclusive') return 'Experiencia 1:1 sin espectadores extra.';
+    return 'Sala abierta con claridad de estado y upsell lateral.';
+  }
+
   chatModeLabel(mode?: string) {
     if (mode === 'members') return 'members';
     if (mode === 'tippers') return 'tippers';
     if (mode === 'ticket_holders') return 'ticket holders';
     if (mode === 'private_only') return 'private only';
     return 'registered';
+  }
+
+  chatSupportCopy(mode?: string) {
+    if (mode === 'members') return 'Solo miembros participan para mantener señal premium.';
+    if (mode === 'tippers') return 'El chat recompensa a quien ya participa con tokens.';
+    if (mode === 'ticket_holders') return 'El evento mantiene conversación cerrada a asistentes.';
+    if (mode === 'private_only') return 'Disponible únicamente durante el tramo privado.';
+    return 'Entrada controlada para reducir spam sin cortar el loop.';
+  }
+
+  monetizationLabel(stream: StreamDetails) {
+    if (stream.privateShowRequest) return 'Private activo';
+    if (stream.activeEvent) return 'Ticket activo';
+    if (stream.goals?.length) return 'Goals en sesión';
+    return 'Tips y follow';
+  }
+
+  monetizationSupportCopy(stream: StreamDetails) {
+    if (stream.privateShowRequest) return 'Hay un request vivo y la room mantiene el contexto visible.';
+    if (stream.activeEvent) return 'El ticket queda expuesto sin bloquear la lectura de estado.';
+    if (stream.goals?.length) return 'Las metas siguen visibles como palanca principal de engagement.';
+    return 'La room queda lista para tips, follow y futuras capas premium.';
   }
 
   statusLabel(stream: StreamDetails) {

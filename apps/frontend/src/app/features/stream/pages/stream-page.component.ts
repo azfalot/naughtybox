@@ -50,7 +50,7 @@ type ReportReason =
     StreamReportModalComponent,
   ],
   template: `
-    <main class="page page-wide">
+    <main class="page page-wide stream-room-page">
       <a class="muted back-link" routerLink="/">Volver al listado</a>
       <app-stream-switcher
         [previous]="adjacentStreams().previous"
@@ -61,8 +61,8 @@ type ReportReason =
       <section *ngIf="loading()" class="page-state">Cargando sala...</section>
       <section *ngIf="error()" class="page-state">{{ error() }}</section>
 
-      <section *ngIf="stream()" class="stream-layout">
-        <div>
+      <section *ngIf="stream()" class="stream-layout stream-room-layout">
+        <div class="stream-room-main">
           <app-stream-stage
             [stream]="stream()"
             [showPlayer]="showPlayer()"
@@ -123,6 +123,7 @@ type ReportReason =
         </div>
 
         <app-stream-sidebar
+          class="stream-room-sidebar-shell"
           [stream]="stream()"
           [messages]="messages()"
           [canChat]="canChat()"
