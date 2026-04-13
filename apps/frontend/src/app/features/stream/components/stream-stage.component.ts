@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { StreamDetails, TicketedEvent } from '@naughtybox/shared-types';
+import { StreamDetails } from '@naughtybox/shared-types';
 import { AppIconComponent } from '../../../ui/icons/app-icon.component';
 import { StreamPlayerComponent } from '../../../ui/media/stream-player.component';
+
+type TicketedEvent = NonNullable<StreamDetails['activeEvent']>;
 
 @Component({
   selector: 'app-stream-stage',
@@ -24,6 +26,20 @@ import { StreamPlayerComponent } from '../../../ui/media/stream-player.component
           <p class="eyebrow">Preparando</p>
           <h2 class="mini-title">La sala está iniciando la emisión</h2>
           <p class="muted">{{ preparingCopy }}</p>
+          <div class="studio-actions">
+            <button type="button" class="action-button action-button-ghost" (click)="toggleFollow.emit()">
+              <app-icon name="heart" [size]="14"></app-icon>
+              {{ stream.following ? 'Siguiendo' : 'Seguir' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="showEndedState && stream" class="offline-state" data-testid="stream-state-ended">
+        <div class="offline-copy">
+          <p class="eyebrow">Emisión finalizada</p>
+          <h2 class="mini-title">El directo ha terminado</h2>
+          <p class="muted">{{ endedCopy }}</p>
           <div class="studio-actions">
             <button type="button" class="action-button action-button-ghost" (click)="toggleFollow.emit()">
               <app-icon name="heart" [size]="14"></app-icon>
@@ -71,12 +87,14 @@ export class StreamStageComponent {
   @Input() stream: StreamDetails | null = null;
   @Input() showPlayer = false;
   @Input() showPreparingState = false;
+  @Input() showEndedState = false;
   @Input() showOfflineState = false;
   @Input() showAccessGate = false;
   @Input() playbackUrl = '';
   @Input() playbackMode: 'hls' | 'webrtc' = 'hls';
   @Input() offlineCopy = '';
   @Input() preparingCopy = '';
+  @Input() endedCopy = '';
   @Input() accessHeadline = '';
   @Input() accessCopy = '';
   @Input() authenticated = false;

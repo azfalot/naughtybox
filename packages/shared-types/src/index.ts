@@ -104,7 +104,7 @@ export type StreamAccessMode =
   | 'ticketed_event'
   | 'private_exclusive';
 export type ChatAccessMode = 'registered' | 'members' | 'tippers' | 'ticket_holders' | 'private_only';
-export type StreamRoomPresence = 'loading' | 'preparing' | 'live' | 'offline';
+export type StreamRoomPresence = 'loading' | 'preparing' | 'live' | 'ended' | 'offline';
 
 export interface StreamSummary {
   id: string;
@@ -184,6 +184,20 @@ export interface ResolveStreamRoomPresenceInput {
   activeSessionStatus?: string | null;
 }
 
+/**
+ * Resolves the canonical room presence state from raw API signals.
+ *
+ * Priority (highest → lowest):
+ *   loading   – data is still in flight
+ *   live      – MediaMTX confirmed public playback (isLive === true)
+ *   live      – backend session status is 'live'
+ *   preparing – booth opened, session exists, but ingest not yet confirmed
+ *   ended     – session completed/ended without a new one starting
+ *   offline   – no active session
+ *
+ * The 'ended' state distinguishes a stream that was recently live from one
+ * that was never started, preventing ambiguous offline messaging.
+ */
 export function resolveStreamRoomPresence(input: ResolveStreamRoomPresenceInput): StreamRoomPresence {
   if (input.isLoading) {
     return 'loading';
@@ -195,6 +209,10 @@ export function resolveStreamRoomPresence(input: ResolveStreamRoomPresenceInput)
 
   if (input.activeSessionStatus === 'preparing') {
     return 'preparing';
+  }
+
+  if (input.activeSessionStatus === 'ended' || input.activeSessionStatus === 'completed') {
+    return 'ended';
   }
 
   return 'offline';
