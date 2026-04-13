@@ -28,6 +28,10 @@ export const routes: Routes = [
     component: CreatorStudioPageComponent,
   },
   {
+    path: 'studio/broadcast',
+    component: CreatorStudioPageComponent,
+  },
+  {
     path: 'legal/:section',
     component: LegalPageComponent,
   },

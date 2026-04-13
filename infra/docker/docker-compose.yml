@@ -64,7 +64,7 @@ services:
       mediamtx:
         condition: service_started
     ports:
-      - "3000:3000"
+      - "${BACKEND_PUBLIC_PORT:-3000}:3000"
     restart: unless-stopped
 
   frontend:
