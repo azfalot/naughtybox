@@ -179,3 +179,16 @@ test('room state moves deterministically from offline to preparing and back', as
   await expect(page.getByTestId('stream-state-offline')).toBeVisible();
   await expect(page.getByTestId('stream-status-badge')).toHaveText('Offline');
 });
+
+test('broadcast booth route is reachable for operational validation', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('naughtybox.age-confirmed', 'true');
+  });
+
+  await page.goto('/studio/broadcast');
+  await expect(page).toHaveURL(/\/studio\/broadcast$/);
+  await expect(page.getByRole('heading', { name: 'Necesitas iniciar sesion', level: 1 })).toBeVisible();
+  await expect(
+    page.getByText('El estudio protege perfil, stream key, chat privado y futuras capas de pagos y tokens.'),
+  ).toBeVisible();
+});

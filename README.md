@@ -34,6 +34,12 @@ OBS -> RTMP -> MediaMTX -> HLS -> Browser
 docker compose -f infra/docker/docker-compose.yml up --build
 ```
 
+Fallback rapido en Windows si el puerto 3000 esta reservado:
+
+```powershell
+$env:BACKEND_PUBLIC_PORT=3100; docker compose -f infra/docker/docker-compose.yml up --build
+```
+
 Services:
 
 - Frontend: `http://localhost:4200`
