@@ -4,20 +4,17 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   ChatMessage,
   CreatorPublicProfile,
-  Goal,
-  ReportReason,
   resolveStreamRoomPresence,
   StreamDetails,
   StreamSummary,
-  TicketedEvent,
   WalletSummary,
 } from '@naughtybox/shared-types';
-import { AuthApiService } from '../../../services/auth-api.service';
-import { ChatApiService } from '../../../services/chat-api.service';
 import { ShowsApiService } from '../../../services/shows-api.service';
-import { StreamsApiService } from '../../../services/streams-api.service';
 import { ToastService } from '../../../services/toast.service';
-import { WalletApiService } from '../../../services/wallet-api.service';
+import { AuthApiService } from '../../../shared/services/auth-api.service';
+import { ChatApiService } from '../../../shared/services/chat-api.service';
+import { StreamsApiService } from '../../../shared/services/streams-api.service';
+import { WalletApiService } from '../../../shared/services/wallet-api.service';
 import { DEFAULT_COVER_GRADIENT } from '../../../theme/theme.constants';
 import { StreamDetailsPanelComponent } from '../components/stream-details-panel.component';
 import { StreamProfilePanelComponent } from '../components/stream-profile-panel.component';
@@ -26,6 +23,18 @@ import { StreamSidebarComponent } from '../components/stream-sidebar.component';
 import { StreamStageComponent } from '../components/stream-stage.component';
 import { StreamSwitcherComponent } from '../components/stream-switcher.component';
 import { DEFAULT_PROFILE, STORE_PREVIEW, StreamProfileTab, VIDEO_PREVIEW } from '../models/stream-page.models';
+
+type Goal = NonNullable<StreamDetails['goals']>[number];
+type TicketedEvent = NonNullable<StreamDetails['activeEvent']>;
+type ReportReason =
+  | 'creator_misconduct'
+  | 'harassment'
+  | 'fraud'
+  | 'copyright'
+  | 'dangerous_behavior'
+  | 'non_consensual_content'
+  | 'underage_risk'
+  | 'other';
 
 @Component({
   selector: 'app-stream-page',
@@ -58,11 +67,13 @@ import { DEFAULT_PROFILE, STORE_PREVIEW, StreamProfileTab, VIDEO_PREVIEW } from 
             [stream]="stream()"
             [showPlayer]="showPlayer()"
             [showPreparingState]="showPreparingState()"
+            [showEndedState]="showEndedState()"
             [showOfflineState]="showOfflineState()"
             [showAccessGate]="showAccessGate()"
             [playbackUrl]="playbackUrl()"
             [playbackMode]="playbackMode()"
             [preparingCopy]="preparingCopy()"
+            [endedCopy]="endedCopy()"
             [offlineCopy]="offlineCopy()"
             [accessHeadline]="accessHeadline()"
             [accessCopy]="accessCopy()"
@@ -125,7 +136,6 @@ import { DEFAULT_PROFILE, STORE_PREVIEW, StreamProfileTab, VIDEO_PREVIEW } from 
           [notice]="notice()"
           [canModerateRoom]="canModerateRoom()"
           (sendMessage)="sendMessage($event)"
-          (acceptRoomRules)="acceptRoomRules()"
           (subscribe)="subscribe()"
           (buyTicket)="buyTicket()"
           (addDevCredit)="addDevCredit()"
@@ -154,7 +164,10 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   private readonly chatApi = inject(ChatApiService);
   private readonly showsApi = inject(ShowsApiService);
   private readonly toast = inject(ToastService);
+  private routeSubscription?: { unsubscribe(): void };
   private refreshTimer?: ReturnType<typeof setInterval>;
+  private activeSlug: string | null = null;
+  private initializeRequestId = 0;
 
   readonly stream = signal<StreamDetails | null>(null);
   readonly streamCatalog = signal<StreamSummary[]>([]);
@@ -179,11 +192,13 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   );
   readonly canWatch = computed(() => this.stream()?.viewerAccess?.canWatch ?? true);
   readonly showPreparingState = computed(() => this.roomPresence() === 'preparing');
+  readonly showEndedState = computed(() => this.roomPresence() === 'ended');
   readonly showOfflineState = computed(() => this.roomPresence() === 'offline');
   readonly showAccessGate = computed(() => this.roomPresence() === 'live' && !this.canWatch());
   readonly showPlayer = computed(() => this.roomPresence() === 'live' && this.canWatch());
+  // canChat requires a confirmed live session — roomPresence() already encodes isLive + activeSession
   readonly canChat = computed(() =>
-    Boolean(this.stream()?.isLive && this.stream()?.activeSession && this.stream()?.viewerAccess?.canChat),
+    this.roomPresence() === 'live' && Boolean(this.stream()?.viewerAccess?.canChat),
   );
   readonly canModerateRoom = computed(() => Boolean(this.stream()?.isOwnerView));
   readonly playbackMode = computed<'hls' | 'webrtc'>(() => this.stream()?.playback.preferredMode ?? 'hls');
@@ -193,9 +208,9 @@ export class StreamPageComponent implements OnInit, OnDestroy {
       : (this.stream()?.playback.hlsUrl ?? ''),
   );
   readonly activeGoal = computed<Goal | null>(
-    () => this.stream()?.goals.find((goal) => goal.status === 'active') ?? null,
+    () => this.stream()?.goals?.find((goal) => goal.status === 'active') ?? null,
   );
-  readonly queuedGoals = computed<Goal[]>(() => this.stream()?.goals.filter((goal) => goal.status === 'queued') ?? []);
+  readonly queuedGoals = computed<Goal[]>(() => this.stream()?.goals?.filter((goal) => goal.status === 'queued') ?? []);
   readonly activeEvent = computed<TicketedEvent | null>(() => this.stream()?.activeEvent ?? null);
   readonly privateRequest = computed(() => this.stream()?.privateShowRequest ?? null);
   readonly adjacentStreams = computed(() => {
@@ -223,35 +238,30 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   });
 
   async ngOnInit() {
-    const slug = this.route.snapshot.paramMap.get('slug');
-    if (!slug) {
-      this.error.set('Sala no valida.');
-      this.loading.set(false);
-      return;
-    }
+    this.routeSubscription = this.route.paramMap.subscribe((params) => {
+      const slug = params.get('slug');
 
-    try {
-      await this.loadStream(slug);
-      await this.loadCatalog();
-      await this.loadChat(slug);
-      if (this.authApi.isAuthenticated()) {
-        await this.loadWallet();
-        this.connectChat(slug);
+      if (!slug) {
+        this.activeSlug = null;
+        this.stopRealtime();
+        this.stream.set(null);
+        this.error.set('Sala no valida.');
+        this.loading.set(false);
+        return;
       }
-      this.refreshTimer = setInterval(() => {
-        void this.loadStream(slug, false);
-        void this.loadChat(slug);
-      }, 8000);
-    } catch (error) {
-      this.error.set(error instanceof Error ? error.message : 'No se pudo cargar la sala.');
-    } finally {
-      this.loading.set(false);
-    }
+
+      if (slug === this.activeSlug) {
+        return;
+      }
+
+      this.activeSlug = slug;
+      void this.initializeRoom(slug);
+    });
   }
 
   ngOnDestroy() {
-    this.chatApi.disconnect();
-    if (this.refreshTimer) clearInterval(this.refreshTimer);
+    this.routeSubscription?.unsubscribe();
+    this.stopRealtime();
   }
 
   coverStyle() {
@@ -271,6 +281,11 @@ export class StreamPageComponent implements OnInit, OnDestroy {
     if (mode === 'ticketed_event') return 'Evento con ticket';
     if (mode === 'premium_membership_required') return 'Contenido premium';
     return 'Acceso restringido';
+  }
+
+  endedCopy() {
+    const profile = this.publicProfile();
+    return `La emisión de ${profile.displayName} ha terminado. Cuando vuelva a emitir, la sala se activará automáticamente.`;
   }
 
   offlineCopy() {
@@ -303,38 +318,44 @@ export class StreamPageComponent implements OnInit, OnDestroy {
   }
 
   chatLockMessage() {
-    const access = this.stream()?.viewerAccess;
-    if (!this.stream()?.isLive || !this.stream()?.activeSession) {
+    const presence = this.roomPresence();
+    if (presence !== 'live') {
       return 'El chat solo se abre cuando la creadora esta en directo y se reinicia con cada nueva sesion.';
     }
     if (!this.authApi.isAuthenticated()) {
       return 'Entra con tu cuenta para acceder al chat y a los permisos de la sala.';
     }
     if (this.stream()?.roomRules && !this.stream()?.viewerAccess?.canChat) {
-      return 'Antes de escribir debes aceptar las reglas configuradas para esta sala.';
+      return 'No puedes escribir en este chat con la configuración actual de la sala y sus reglas.';
     }
-    return `Este chat está configurado para ${this.chatModeLabel(access?.chatMode)}.`;
+    return `Este chat está configurado para ${this.chatModeLabel(this.stream()?.viewerAccess?.chatMode)}.`;
   }
 
-  showSubscribeAction() {
-    return this.stream()?.viewerAccess?.accessMode === 'premium_membership_required';
-  }
+  // Access gate actions — only meaningful when the stream is actually live.
+  // Returning false for preparing/ended/offline prevents stale access UI.
+  readonly showSubscribeAction = computed(
+    () =>
+      this.roomPresence() === 'live' &&
+      this.stream()?.viewerAccess?.accessMode === 'premium_membership_required',
+  );
 
-  showBuyTicketAction() {
+  readonly showBuyTicketAction = computed(() => {
+    if (this.roomPresence() !== 'live') return false;
     const access = this.stream()?.viewerAccess;
     const event = this.activeEvent();
     return Boolean(event && access?.accessMode === 'ticketed_event' && !access?.hasEventTicket && !access?.isMember);
-  }
+  });
 
-  showPrivateRequestAction() {
+  readonly showPrivateRequestAction = computed(() => {
+    if (this.roomPresence() !== 'live') return false;
     const access = this.stream()?.viewerAccess;
     return Boolean(
       this.authApi.isAuthenticated() &&
-      access?.accessMode === 'private_exclusive' &&
-      !access?.isPrivateRequester &&
-      this.authApi.user()?.role !== 'creator',
+        access?.accessMode === 'private_exclusive' &&
+        !access?.isPrivateRequester &&
+        this.authApi.user()?.role !== 'creator',
     );
-  }
+  });
 
   chatModeLabel(mode?: string) {
     if (mode === 'members') return 'members';
@@ -451,19 +472,6 @@ export class StreamPageComponent implements OnInit, OnDestroy {
       this.toast.success('Membresía activada.');
     } catch (error) {
       this.notice.set(error instanceof Error ? error.message : 'No se pudo activar la membresia.');
-      this.toast.error(this.notice());
-    }
-  }
-
-  async acceptRoomRules() {
-    if (!this.stream()) return;
-    try {
-      const access = await this.streamsApi.acceptRoomRules(this.stream()!.slug);
-      this.stream.update((current) => (current ? { ...current, viewerAccess: access } : current));
-      this.notice.set('Has aceptado las reglas de la sala.');
-      this.toast.success('Reglas aceptadas.');
-    } catch (error) {
-      this.notice.set(error instanceof Error ? error.message : 'No se pudieron aceptar las reglas.');
       this.toast.error(this.notice());
     }
   }
@@ -600,5 +608,70 @@ export class StreamPageComponent implements OnInit, OnDestroy {
         this.messages.update((current) => [...current, message].slice(-40));
       },
     });
+  }
+
+  private async initializeRoom(slug: string) {
+    const requestId = ++this.initializeRequestId;
+
+    this.stopRealtime();
+    this.messages.set([]);
+    this.notice.set('');
+    this.loading.set(true);
+    this.error.set('');
+
+    try {
+      // Critical path: stream details must succeed.
+      await this.loadStream(slug);
+    } catch (error) {
+      if (requestId !== this.initializeRequestId || slug !== this.activeSlug) {
+        return;
+      }
+      this.error.set(error instanceof Error ? error.message : 'No se pudo cargar la sala.');
+      this.loading.set(false);
+      return;
+    }
+
+    if (requestId !== this.initializeRequestId || slug !== this.activeSlug) {
+      return;
+    }
+
+    // Non-critical loads — failures here don't block the stream room.
+    void this.loadCatalog().catch((error) => this.handleOptionalLoadError('catálogo de streams', error));
+    void this.loadChat(slug).catch((error) => this.handleOptionalLoadError('historial de chat', error));
+
+    if (this.authApi.isAuthenticated()) {
+      void this.loadWallet().catch((error) => this.handleOptionalLoadError('wallet', error));
+
+      if (requestId !== this.initializeRequestId || slug !== this.activeSlug) {
+        return;
+      }
+
+      this.connectChat(slug);
+    } else {
+      this.wallet.set(null);
+    }
+
+    this.refreshTimer = setInterval(() => {
+      if (slug !== this.activeSlug || requestId !== this.initializeRequestId) {
+        return;
+      }
+
+      void this.loadStream(slug, false).catch((error) => this.handleOptionalLoadError('refresh de stream', error));
+      void this.loadChat(slug).catch((error) => this.handleOptionalLoadError('refresh de chat', error));
+    }, 8000);
+
+    this.loading.set(false);
+  }
+
+  private handleOptionalLoadError(operation: string, error: unknown) {
+    console.warn(`[StreamPageComponent] Fallo en carga opcional: ${operation}.`, error);
+  }
+
+  private stopRealtime() {
+    this.chatApi.disconnect();
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+      this.refreshTimer = undefined;
+    }
   }
 }

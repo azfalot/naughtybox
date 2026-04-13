@@ -44,3 +44,54 @@ test('offline is returned when no live or preparing session exists', () => {
     'offline',
   );
 });
+
+test('ended is returned when session status is ended', () => {
+  assert.equal(
+    resolveStreamRoomPresence({
+      isLive: false,
+      activeSessionStatus: 'ended',
+    }),
+    'ended',
+  );
+});
+
+test('ended is returned when session status is completed', () => {
+  assert.equal(
+    resolveStreamRoomPresence({
+      isLive: false,
+      activeSessionStatus: 'completed',
+    }),
+    'ended',
+  );
+});
+
+test('isLive overrides ended session status', () => {
+  assert.equal(
+    resolveStreamRoomPresence({
+      isLive: true,
+      activeSessionStatus: 'ended',
+    }),
+    'live',
+  );
+});
+
+test('loading wins over ended session status', () => {
+  assert.equal(
+    resolveStreamRoomPresence({
+      isLoading: true,
+      isLive: false,
+      activeSessionStatus: 'ended',
+    }),
+    'loading',
+  );
+});
+
+test('offline is returned when session status is unknown value', () => {
+  assert.equal(
+    resolveStreamRoomPresence({
+      isLive: false,
+      activeSessionStatus: 'unknown_future_status',
+    }),
+    'offline',
+  );
+});

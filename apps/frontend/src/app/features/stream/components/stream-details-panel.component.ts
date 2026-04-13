@@ -1,13 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import {
-  CreatorPublicProfile,
-  Goal,
-  resolveStreamRoomPresence,
-  StreamDetails,
-  TicketedEvent,
-} from '@naughtybox/shared-types';
+import { CreatorPublicProfile, resolveStreamRoomPresence, StreamDetails } from '@naughtybox/shared-types';
 import { AppIconComponent } from '../../../ui/icons/app-icon.component';
+
+type Goal = NonNullable<StreamDetails['goals']>[number];
+type TicketedEvent = NonNullable<StreamDetails['activeEvent']>;
 
 @Component({
   selector: 'app-stream-details-panel',
