@@ -42,6 +42,38 @@ Services:
 - MediaMTX metrics: `http://localhost:9998`
 - RTMP ingest for OBS: `rtmp://localhost:1935/live`
 
+## End-to-end tests
+
+Playwright is configured from the repo root and targets `tests/e2e`.
+
+Default local assumptions:
+
+- Frontend at `http://localhost:4200`
+- Backend is optional for the current mock-first smoke suite
+- Runtime can be started separately when you want to exercise real API flows
+
+Run the E2E smoke suite:
+
+```bash
+npm run test:e2e
+```
+
+Optional local mode with auto-started frontend server:
+
+```bash
+PLAYWRIGHT_USE_WEBSERVER=1 npm run test:e2e
+```
+
+Override target URLs when needed:
+
+```bash
+PLAYWRIGHT_BASE_URL=http://localhost:4200 PLAYWRIGHT_API_BASE_URL=http://localhost:3000 npm run test:e2e
+```
+
+Current scope is intentionally narrow: stable smoke coverage for the core loop, not exhaustive live-stream validation.
+
+Current strategy is explicit: the foundation suite mocks network responses for the lobby and room shell so it stays reproducible without depending on a real live stream or a full backend runtime.
+
 ## Test with OBS
 
 Use one of the seeded stream keys exposed by the API:
