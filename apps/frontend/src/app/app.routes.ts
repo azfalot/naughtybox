@@ -3,6 +3,7 @@ import { HomePageComponent } from './features/home/home-page.component';
 import { CreatorStudioPageComponent } from './features/creator-studio/creator-studio-page.component';
 import { LoginPageComponent } from './features/auth/login-page.component';
 import { RegisterPageComponent } from './features/auth/register-page.component';
+import { BroadcastBoothPageComponent } from './features/broadcast/pages/broadcast-booth-page.component';
 import { StreamPageComponent } from './features/stream/pages/stream-page.component';
 import { LegalPageComponent } from './features/legal/legal-page.component';
 
@@ -29,7 +30,7 @@ export const routes: Routes = [
   },
   {
     path: 'studio/broadcast',
-    component: CreatorStudioPageComponent,
+    component: BroadcastBoothPageComponent,
   },
   {
     path: 'legal/:section',

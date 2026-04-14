@@ -126,6 +126,15 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
 
+      CREATE TABLE IF NOT EXISTS stream_sessions (
+        id TEXT PRIMARY KEY,
+        room_slug TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'preparing',
+        source TEXT NOT NULL DEFAULT 'browser',
+        started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        ended_at TIMESTAMPTZ
+      );
+
       CREATE TABLE IF NOT EXISTS payment_provider_configs (
         id TEXT PRIMARY KEY,
         provider_key TEXT NOT NULL UNIQUE,
