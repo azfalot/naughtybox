@@ -187,8 +187,7 @@ test('broadcast booth route is reachable for operational validation', async ({ p
 
   await page.goto('/studio/broadcast');
   await expect(page).toHaveURL(/\/studio\/broadcast$/);
+  await expect(page.getByTestId('broadcast-booth-page')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Necesitas iniciar sesion', level: 1 })).toBeVisible();
-  await expect(
-    page.getByText('El estudio protege perfil, stream key, chat privado y futuras capas de pagos y tokens.'),
-  ).toBeVisible();
+  await expect(page.getByText('La cabina de emision requiere una cuenta de creador activa.')).toBeVisible();
 });
