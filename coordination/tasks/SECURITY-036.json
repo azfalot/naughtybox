@@ -1,0 +1,115 @@
+{
+  "schema_version": 2,
+  "task": {
+    "id": "SECURITY-036",
+    "source": "portfolio-APP-035",
+    "issue": "https://github.com/azfalot/naughtybox/issues/36"
+  },
+  "goal": "Remediar vulnerabilidades críticas del lockfile y planificar actualizaciones mayores",
+  "assignment": {
+    "role": "implementer",
+    "engine": "gemini"
+  },
+  "state": "WAITING_CI",
+  "history": [
+    {
+      "state": "AVAILABLE",
+      "at": "2026-10-18T12:03:22.995Z"
+    },
+    {
+      "state": "PLANNING",
+      "at": "2026-10-18T12:05:00.000Z"
+    },
+    {
+      "state": "IMPLEMENTING",
+      "at": "2026-10-18T12:10:00.000Z"
+    },
+    {
+      "state": "TESTING",
+      "at": "2026-10-18T12:15:00.000Z"
+    },
+    {
+      "state": "WAITING_CI",
+      "at": "2026-10-18T12:23:00.000Z"
+    }
+  ],
+  "scope": {
+    "bounded_context": "dependency-security",
+    "allowed": [
+      "package.json",
+      "package-lock.json",
+      ".github/workflows/runtime.yml",
+      "docs/SECURITY-036.md",
+      "coordination/tasks/SECURITY-036.json",
+      "evidence/security036*"
+    ],
+    "forbidden": [
+      "production",
+      "other-project-services",
+      "payments",
+      "checkoutCodex"
+    ]
+  },
+  "ownership": {
+    "branch": "feature/36-dependency-security",
+    "base": "b1deddcf4355c7349174ffb9b8f833b3c5d28200"
+  },
+  "permissions": {
+    "git_write": true,
+    "github_write": true,
+    "merge": false,
+    "production": "denied"
+  },
+  "acceptance_criteria": [
+    {
+      "id": "AUDIT_CRITICAL_RED",
+      "description": "Captura de npm audit --omit=dev --audit-level=critical rojo antes del cambio (27 avisos: 2 critical)",
+      "status": "PASSED"
+    },
+    {
+      "id": "CRITICAL_REMEDIATION",
+      "description": "Remediación compatible sin --force de 2 criticals (proxy-addr y tar)",
+      "status": "PASSED"
+    },
+    {
+      "id": "CI_AUDIT_GATE",
+      "description": "Gate audit critical añadido en .github/workflows/runtime.yml con bash pipefail sin suprimir checks existentes",
+      "status": "PASSED"
+    },
+    {
+      "id": "VERIFICATION_SUITE",
+      "description": "Verificación de build:ci, 11 test:units, 3 E2E mock y audit critical verde",
+      "status": "PASSED"
+    },
+    {
+      "id": "RESIDUAL_ROADMAP",
+      "description": "Documentación y plan concreto para vulnerabilidades residuales High/Moderate que requieren migración mayor",
+      "status": "PASSED"
+    },
+    {
+      "id": "REVIEW",
+      "description": "PR draft base feature/35-browser-runtime y revisión independiente",
+      "status": "PENDING"
+    }
+  ],
+  "verification": {
+    "build": "PASSED_ALL_FOUR_APPS",
+    "unit": "PASSED_11",
+    "mock_e2e": "PASSED_3",
+    "real_media": "PASSED_SYNTHETIC_H264_OPUS_HLS_PLAYBACK",
+    "security": "PASSED_0_CRITICAL_25_RESIDUAL_HIGH_MODERATE",
+    "ci": "WAITING_CI"
+  },
+  "evidence": {
+    "test_results": [
+      "evidence/security036-audit-critical-red.txt",
+      "evidence/security036-production-audit-before.json",
+      "evidence/security036-audit-critical-green.txt",
+      "evidence/security036-production-audit-after.json",
+      "evidence/security036-build-ci.txt",
+      "evidence/security036-units.txt",
+      "evidence/security036-e2e-mock.txt",
+      "evidence/security036-media-smoke.json"
+    ]
+  }
+}

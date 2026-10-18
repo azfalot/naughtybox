@@ -1,0 +1,8 @@
+
+Running 3 tests using 1 worker
+
+  ok 1 tests\e2e\core-loop.spec.ts:128:5 › viewer can enter a room from the lobby and see the room shell (1.4s)
+  ok 2 tests\e2e\core-loop.spec.ts:148:5 › room state moves deterministically from offline to preparing and back (2.9s)
+  ok 3 tests\e2e\core-loop.spec.ts:183:5 › broadcast booth route is reachable for operational validation (1.1s)
+
+  3 passed (21.1s)

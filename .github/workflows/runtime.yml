@@ -20,6 +20,10 @@ jobs:
           node-version: '20'
           cache: npm
       - run: npm ci --ignore-scripts
+      - name: Critical dependency security gate
+        run: |
+          set -euo pipefail
+          npm audit --omit=dev --audit-level=critical | tee evidence/security036-audit-ci.txt
       - name: Build existing applications
         run: npm run build:ci | tee evidence/runtime035-build-ci.txt
       - name: Domain and deployment contracts
@@ -43,6 +47,7 @@ jobs:
           name: naughtybox-local-media
           path: |
             evidence/runtime035-*-ci.*
+            evidence/security036-*-ci.*
             test-results/
             playwright-report/
           retention-days: 14
