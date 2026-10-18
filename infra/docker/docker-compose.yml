@@ -4,38 +4,28 @@ name: naughtybox
 # Run from repo root: docker compose -f infra/docker/docker-compose.yml up --build
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: naughtybox
-      POSTGRES_PASSWORD: naughtybox
-      POSTGRES_DB: naughtybox
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U naughtybox"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   redis:
     image: redis:7-alpine
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 5s
       retries: 5
+    networks: [dev-network]
 
   mediamtx:
     image: bluenviron/mediamtx:1.17.0
     restart: unless-stopped
     ports:
-      - "1935:1935"
-      - "8888:8888"
-      - "9997:9997"
-      - "9998:9998"
+      - '127.0.0.1:1935:1935'
+      - '127.0.0.1:8888:8888'
+      - '127.0.0.1:8889:8889'
+      - '127.0.0.1:8189:8189/udp'
+      - '127.0.0.1:9997:9997'
+      - '127.0.0.1:9998:9998'
     volumes:
       - ./mediamtx.yml:/mediamtx.yml:ro
+    networks: [dev-network]
 
   backend:
     build:
@@ -44,28 +34,27 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      CORS_ORIGIN: http://localhost:4200
-      PUBLIC_API_BASE_URL: http://localhost:3000
-      MEDIA_BASE_URL: http://localhost:4200/media
+      CORS_ORIGIN: http://localhost:${FRONTEND_PUBLIC_PORT:-4200}
+      PUBLIC_API_BASE_URL: http://localhost:${BACKEND_PUBLIC_PORT:-3000}
+      MEDIA_BASE_URL: http://localhost:${FRONTEND_PUBLIC_PORT:-4200}/media
       MEDIA_INTERNAL_BASE_URL: http://mediamtx:8888
       RTMP_PUBLISH_URL: rtmp://localhost:1935/live
-      DB_HOST: postgres
+      DB_HOST: shared-postgres
       DB_PORT: 5432
-      DB_USER: naughtybox
-      DB_PASSWORD: naughtybox
-      DB_NAME: naughtybox
+      DB_USER: ${NAUGHTYBOX_DB_USER:-postgres}
+      DB_PASSWORD: ${NAUGHTYBOX_DB_PASSWORD:?Set the local shared PostgreSQL password}
+      DB_NAME: ${NAUGHTYBOX_DB_NAME:-naughtybox}
       REDIS_HOST: redis
       REDIS_PORT: 6379
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
       mediamtx:
         condition: service_started
     ports:
-      - "${BACKEND_PUBLIC_PORT:-3000}:3000"
+      - '127.0.0.1:${BACKEND_PUBLIC_PORT:-3000}:3000'
     restart: unless-stopped
+    networks: [dev-network]
 
   frontend:
     build:
@@ -77,8 +66,10 @@ services:
       mediamtx:
         condition: service_started
     ports:
-      - "4200:80"
+      - '127.0.0.1:${FRONTEND_PUBLIC_PORT:-4200}:80'
     restart: unless-stopped
+    networks: [dev-network]
 
-volumes:
-  postgres_data:
+networks:
+  dev-network:
+    external: true

@@ -22,9 +22,15 @@ hls: true
 hlsAddress: :8888
 hlsAllowOrigins: ['*']
 hlsAlwaysRemux: true
-hlsVariant: mpegts
+hlsVariant: fmp4
 hlsSegmentCount: 7
 hlsSegmentDuration: 1s
+
+webrtc: true
+webrtcAddress: :8889
+webrtcLocalUDPAddress: :8189
+webrtcIPsFromInterfaces: false
+webrtcAdditionalHosts: [127.0.0.1]
 
 metrics: true
 metricsAddress: :9998
