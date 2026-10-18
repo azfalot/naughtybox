@@ -1,3 +1,4 @@
+import { readMediaManifest } from './media-readiness.mjs';
 import { chromium, expect } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
@@ -43,16 +44,7 @@ try {
   expect(report.livePath.tracks).toContain('Opus');
   await publisher.screenshot({ path: evidencePath('publisher', 'png') });
   const playlist = `http://127.0.0.1:8888/${name}/index.m3u8`;
-  await expect
-    .poll(
-      async () => {
-        const res = await fetch(playlist, { signal: AbortSignal.timeout(4000) });
-        if (!res.ok) return '';
-        return res.text();
-      },
-      { timeout: 25000 },
-    )
-    .toContain('opus');
+  await expect.poll(() => readMediaManifest(playlist), { timeout: 25000 }).toContain('opus');
   const viewer = await context.newPage();
   await viewer.goto('http://127.0.0.1:8889/');
   await viewer.setContent('<video id="playback" autoplay muted playsinline controls></video>');

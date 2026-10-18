@@ -1,69 +1,84 @@
 
 > test:units
-> node --test scripts/unit-stream-room-presence.mjs scripts/unit-runtime-contract.mjs
+> node --test scripts/unit-stream-room-presence.mjs scripts/unit-runtime-contract.mjs scripts/unit-media-readiness.mjs
 
 TAP version 13
-# Subtest: browser booth signaling and ICE media have local published ports
-ok 1 - browser booth signaling and ICE media have local published ports
+# Subtest: a timed-out initial HLS request stays pending and the next probe can succeed
+ok 1 - a timed-out initial HLS request stays pending and the next probe can succeed
   ---
-  duration_ms: 1.686
+  duration_ms: 213.3144
+  ...
+# Subtest: an unavailable HTTP manifest is not mistaken for readiness
+ok 2 - an unavailable HTTP manifest is not mistaken for readiness
+  ---
+  duration_ms: 7.4648
+  ...
+# Subtest: configuration errors remain fatal instead of being swallowed as transient readiness
+ok 3 - configuration errors remain fatal instead of being swallowed as transient readiness
+  ---
+  duration_ms: 0.9025
+  ...
+# Subtest: browser booth signaling and ICE media have local published ports
+ok 4 - browser booth signaling and ICE media have local published ports
+  ---
+  duration_ms: 2.3377
   ...
 # Subtest: local stack uses the existing PostgreSQL server and its own database
-ok 2 - local stack uses the existing PostgreSQL server and its own database
+ok 5 - local stack uses the existing PostgreSQL server and its own database
   ---
-  duration_ms: 0.1827
+  duration_ms: 0.2983
   ...
 # Subtest: loading wins over transient stream signals
-ok 3 - loading wins over transient stream signals
+ok 6 - loading wins over transient stream signals
   ---
-  duration_ms: 1.8599
+  duration_ms: 2.9065
   ...
 # Subtest: live wins once playback is confirmed
-ok 4 - live wins once playback is confirmed
+ok 7 - live wins once playback is confirmed
   ---
-  duration_ms: 0.1732
+  duration_ms: 0.3394
   ...
 # Subtest: preparing is exposed when browser booth opened without public playback yet
-ok 5 - preparing is exposed when browser booth opened without public playback yet
+ok 8 - preparing is exposed when browser booth opened without public playback yet
   ---
-  duration_ms: 0.1343
+  duration_ms: 0.241
   ...
 # Subtest: offline is returned when no live or preparing session exists
-ok 6 - offline is returned when no live or preparing session exists
+ok 9 - offline is returned when no live or preparing session exists
   ---
-  duration_ms: 0.1314
+  duration_ms: 0.2827
   ...
 # Subtest: ended is returned when session status is ended
-ok 7 - ended is returned when session status is ended
+ok 10 - ended is returned when session status is ended
   ---
-  duration_ms: 0.1501
+  duration_ms: 0.2672
   ...
 # Subtest: ended is returned when session status is completed
-ok 8 - ended is returned when session status is completed
+ok 11 - ended is returned when session status is completed
   ---
-  duration_ms: 0.1778
+  duration_ms: 0.2426
   ...
 # Subtest: isLive overrides ended session status
-ok 9 - isLive overrides ended session status
+ok 12 - isLive overrides ended session status
   ---
-  duration_ms: 0.2131
+  duration_ms: 0.2577
   ...
 # Subtest: loading wins over ended session status
-ok 10 - loading wins over ended session status
+ok 13 - loading wins over ended session status
   ---
-  duration_ms: 0.2199
+  duration_ms: 0.2759
   ...
 # Subtest: offline is returned when session status is unknown value
-ok 11 - offline is returned when session status is unknown value
+ok 14 - offline is returned when session status is unknown value
   ---
-  duration_ms: 0.3869
+  duration_ms: 0.434
   ...
-1..11
-# tests 11
+1..14
+# tests 14
 # suites 0
-# pass 11
+# pass 14
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 570.7519
+# duration_ms 419.3877
