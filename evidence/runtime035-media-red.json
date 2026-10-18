@@ -1,0 +1,54 @@
+{
+  "syntheticDevicesOnly": true,
+  "path": "live/runtime035-9f372734-e78e-4be9-9d0a-7e8dcabe002d",
+  "startedAt": "2026-10-18T11:46:08.156Z",
+  "livePath": {
+    "name": "live/runtime035-9f372734-e78e-4be9-9d0a-7e8dcabe002d",
+    "confName": "all_others",
+    "ready": true,
+    "readyTime": "2026-10-18T11:46:09.577159471Z",
+    "available": true,
+    "availableTime": "2026-10-18T11:46:09.577159471Z",
+    "online": true,
+    "onlineTime": "2026-10-18T11:46:09.577159571Z",
+    "source": {
+      "type": "webRTCSession",
+      "id": "fd2cff67-1c1e-4825-9257-cf1b13c0f6f2"
+    },
+    "tracks": [
+      "Opus",
+      "H264"
+    ],
+    "tracks2": [
+      {
+        "codec": "Opus",
+        "codecProps": {
+          "channelCount": 1
+        }
+      },
+      {
+        "codec": "H264",
+        "codecProps": {
+          "width": 320,
+          "height": 240,
+          "profile": "Baseline",
+          "level": "2.1"
+        }
+      }
+    ],
+    "readers": [
+      {
+        "type": "hlsMuxer",
+        "id": ""
+      }
+    ],
+    "inboundBytes": 3308,
+    "outboundBytes": 0,
+    "inboundFramesInError": 0,
+    "bytesReceived": 3308,
+    "bytesSent": 0
+  },
+  "status": "failed",
+  "error": "expect(received).toContain(expected) // indexOf\n\nExpected substring: \"opus\"\nReceived string:    \"\"\n\nCall Log:\n- Timeout 25000ms exceeded while waiting on the predicate",
+  "finishedAt": "2026-10-18T11:46:33.760Z"
+}

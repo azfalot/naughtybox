@@ -1,0 +1,6 @@
+2026/10/18 11:46:09 ERR [HLS] [muxer live/runtime035-9f372734-e78e-4be9-9d0a-7e8dcabe002d] the MPEG-TS variant of HLS supports MPEG-4 Audio only
+2026/10/18 11:46:19 ERR [HLS] [muxer live/runtime035-9f372734-e78e-4be9-9d0a-7e8dcabe002d] the MPEG-TS variant of HLS supports MPEG-4 Audio only
+2026/10/18 11:46:29 ERR [HLS] [muxer live/runtime035-9f372734-e78e-4be9-9d0a-7e8dcabe002d] the MPEG-TS variant of HLS supports MPEG-4 Audio only
+2026/10/18 11:46:39 ERR [HLS] [muxer live/runtime035-9f372734-e78e-4be9-9d0a-7e8dcabe002d] the MPEG-TS variant of HLS supports MPEG-4 Audio only
+2026/10/18 11:46:49 ERR [HLS] [muxer live/runtime035-9f372734-e78e-4be9-9d0a-7e8dcabe002d] the MPEG-TS variant of HLS supports MPEG-4 Audio only
+2026/10/18 11:46:59 ERR [HLS] [muxer live/runtime035-9f372734-e78e-4be9-9d0a-7e8dcabe002d] the MPEG-TS variant of HLS supports MPEG-4 Audio only

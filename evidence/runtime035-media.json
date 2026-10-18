@@ -1,0 +1,60 @@
+{
+  "syntheticDevicesOnly": true,
+  "path": "live/runtime035-2180f705-3159-4bd8-a280-eebd9a645330",
+  "startedAt": "2026-10-18T11:51:36.016Z",
+  "livePath": {
+    "name": "live/runtime035-2180f705-3159-4bd8-a280-eebd9a645330",
+    "confName": "all_others",
+    "ready": true,
+    "readyTime": "2026-10-18T11:51:36.744987674Z",
+    "available": true,
+    "availableTime": "2026-10-18T11:51:36.744987674Z",
+    "online": true,
+    "onlineTime": "2026-10-18T11:51:36.744987674Z",
+    "source": {
+      "type": "webRTCSession",
+      "id": "a716d4b8-056b-4180-a93b-0424e0993ce6"
+    },
+    "tracks": [
+      "Opus",
+      "H264"
+    ],
+    "tracks2": [
+      {
+        "codec": "Opus",
+        "codecProps": {
+          "channelCount": 1
+        }
+      },
+      {
+        "codec": "H264",
+        "codecProps": {
+          "width": 320,
+          "height": 240,
+          "profile": "Baseline",
+          "level": "2.1"
+        }
+      }
+    ],
+    "readers": [
+      {
+        "type": "hlsMuxer",
+        "id": ""
+      }
+    ],
+    "inboundBytes": 4480,
+    "outboundBytes": 0,
+    "inboundFramesInError": 0,
+    "bytesReceived": 4480,
+    "bytesSent": 0
+  },
+  "viewer": {
+    "width": 320,
+    "height": 240,
+    "currentTime": 0.307569
+  },
+  "playlist": "#EXTM3U\n#EXT-X-VERSION:9\n#EXT-X-INDEPENDENT-SEGMENTS\n\n#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"audio\",NAME=\"audio2\",AUTOSELECT=YES,DEFAULT=YES,URI=\"audio2_stream.m3u8\"\n\n#EXT-X-STREAM-INF:BANDWIDTH=132006,AVERAGE-BANDWIDTH=122096,CODECS=\"avc1.42c015,opus\",RESOLUTION=320x240,AUDIO=\"audio\"\nvideo1_stream.m3u8\n",
+  "stopped": true,
+  "status": "passed",
+  "finishedAt": "2026-10-18T11:51:42.645Z"
+}
