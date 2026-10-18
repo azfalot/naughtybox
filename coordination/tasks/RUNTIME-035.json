@@ -47,7 +47,9 @@
       ".github/workflows/runtime.yml",
       ".env.example",
       "scripts/smoke-webrtc.mjs",
-      ".gitignore"
+      ".gitignore",
+      "scripts/media-readiness.mjs",
+      "scripts/unit-media-readiness.mjs"
     ],
     "forbidden": [
       "payments",
@@ -97,11 +99,11 @@
   },
   "verification": {
     "build": "PASSED_ALL_FOUR_APPS",
-    "unit": "PASSED_11",
+    "unit": "PASSED_14",
     "mock_e2e": "PASSED_3",
     "real_media": "PASSED_SYNTHETIC_H264_OPUS_HLS_PLAYBACK",
     "security": "KNOWN_27_ADVISORIES_ISSUE36",
-    "ci": "PENDING"
+    "ci": "RERUN_PENDING_AFTER_READINESS_FIX"
   },
   "evidence": {
     "test_results": [
@@ -111,7 +113,9 @@
       "evidence/runtime035-media.json",
       "evidence/runtime035-all-unit.txt",
       "evidence/runtime035-build.txt",
-      "evidence/runtime035-foundation-browser.txt"
+      "evidence/runtime035-foundation-browser.txt",
+      "evidence/runtime035-readiness-red.txt",
+      "evidence/runtime035-media-local-ci-mode.txt"
     ]
   }
 }

@@ -31,10 +31,12 @@ The service list must contain redis, mediamtx, backend and frontend, with no pos
 
 ## Verification and limits
 
-The four existing application builds pass. `npm run test:units` includes all9 prior presence tests and2 new deployment contracts, all11 passing. The3 existing mocked browser workflows pass; they verify UI routing/state and do not prove real media transmission.
+The four existing application builds pass. `npm run test:units` includes all9 prior presence tests and2 new deployment contracts, all14 passing. The3 existing mocked browser workflows pass; they verify UI routing/state and do not prove real media transmission.
 
 `NAUGHTYBOX_MEDIA_SMOKE=1 node scripts/smoke-webrtc.mjs` verifies real synthetic WebRTC→MediaMTX→HLS→Hls.js playback: H264+Opus,320×240 decoded video, currentTime advancing, audio codec in the playlist and source stopped after closing the publisher. It uses fake Chromium devices only and a unique test path. It never accesses a physical camera/microphone or a remote server. Machine evidence is in `runtime035-media.json` and synthetic screenshots. The initial workspace dependency-resolution problem in the test harness was corrected to use the frontend's installed Hls.js.
 
-Local WebRTC traces can contain local ICE addresses, so they are ignored by Git and retained privately. CI uploads its own synthetic trace and runtime logs. The workflow builds, runs11 contracts, tests real media and runs3 mocked browser workflows; it does not certify the whole streaming product.
+Local WebRTC traces can contain local ICE addresses, so they are ignored by Git and retained privately. CI uploads its own synthetic trace and runtime logs. The workflow builds, runs14 contracts, tests real media and runs3 mocked browser workflows; it does not certify the whole streaming product.
 
 The dependency audit remains a separate release blocker: the inherited lockfile reports27 production dependency advisories, including2 critical. See issue36 and `runtime035-production-audit.json`. No major dependency upgrades or payment/identity changes are bundled into this runtime change. Backend broadcast concurrency, ingest authorization, stop synchronization, OBS-specific playback and deployment validation need their own verification; no public release is claimed.
+
+The first remote CI run39125215369 correctly failed on the initial HLS request exceeding its4-second per-probe timeout. A delayed local HTTP fixture reproduced the escaped timeout before fixing the readiness helper. Only TimeoutError now means a pending probe: the25-second overall deadline, codec check and real playback assertions remain unchanged; invalid URLs still fail immediately. The3 additional readiness tests bring the registered unit total to14. CI artifacts use a separate -ci suffix and exclude archived local reports.
