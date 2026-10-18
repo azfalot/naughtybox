@@ -1,0 +1,31 @@
+
+> build:ci
+> npm run build -w @naughtybox/shared-types && npm run build -w @naughtybox/backend && npm run build -w @naughtybox/streaming && npm run build -w @naughtybox/frontend
+
+
+> @naughtybox/shared-types@0.0.1 build
+> tsc
+
+
+> @naughtybox/backend@0.0.1 build
+> nest build
+
+
+> @naughtybox/streaming@0.0.1 build
+> tsc
+
+
+> @naughtybox/frontend@0.0.1 build
+> ng build
+
+Initial chunk files   | Names         |  Raw size | Estimated transfer size
+main-IHZISXYC.js      | main          | 775.45 kB |               195.91 kB
+styles-D5XEDHXG.css   | styles        | 190.71 kB |                20.83 kB
+polyfills-OEPZ4W45.js | polyfills     |  33.71 kB |                11.02 kB
+
+                      | Initial total | 999.87 kB |               227.75 kB
+
+Output location: C:\Users\Hokaido\Documents\NaughtyBox\apps\frontend\dist\frontend
+
+Application bundle generation complete. [31.188 seconds]
+

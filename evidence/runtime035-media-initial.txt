@@ -1,0 +1,16 @@
+C:\Users\Hokaido\Documents\NaughtyBox\node_modules\playwright\lib\matchers\expect.js:293
+    throw new Error(message);
+          ^
+
+Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: "opus"
+Received string:    ""
+
+Call Log:
+- Timeout 25000ms exceeded while waiting on the predicate
+    at pollMatcher (C:\Users\Hokaido\Documents\NaughtyBox\node_modules\playwright\lib\matchers\expect.js:293:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async file:///C:/Users/Hokaido/Documents/NaughtyBox/scripts/smoke-webrtc.mjs:35:3
+
+Node.js v20.20.2

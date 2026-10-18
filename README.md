@@ -30,14 +30,16 @@ OBS -> RTMP -> MediaMTX -> HLS -> Browser
 
 ## Run the stack
 
+This is a local development prototype. Use the existing shared PostgreSQL server and external `dev-network`; do not create another PostgreSQL instance. Configure the product databases and a private `.env` from `.env.example` as described in [RUNTIME-035](docs/RUNTIME-035.md). Dependency/security remediation and public deployment validation remain pending.
+
 ```bash
-docker compose -f infra/docker/docker-compose.yml up --build
+docker compose --env-file .env -f infra/docker/docker-compose.yml up --build
 ```
 
 Fallback rapido en Windows si el puerto 3000 esta reservado:
 
 ```powershell
-$env:BACKEND_PUBLIC_PORT=3100; docker compose -f infra/docker/docker-compose.yml up --build
+$env:BACKEND_PUBLIC_PORT=3180; docker compose --env-file .env -f infra/docker/docker-compose.yml up --build
 ```
 
 Services:
@@ -47,6 +49,7 @@ Services:
 - Media server HLS: `http://localhost:8888`
 - MediaMTX metrics: `http://localhost:9998`
 - RTMP ingest for OBS: `rtmp://localhost:1935/live`
+- Browser publisher: `http://localhost:8889/live/<stream-key>/publish` with local WebRTC media on UDP8189. H264/Opus synthetic playback is verified through HLS fragmented MP4; see RUNTIME-035 for scope and evidence.
 
 ## End-to-end tests
 

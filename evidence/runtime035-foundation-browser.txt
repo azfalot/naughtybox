@@ -1,0 +1,20 @@
+
+> test:e2e
+> playwright test
+
+[WebServer] (node:59444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:60272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] - Building...
+[WebServer] 
+[WebServer] (node:59748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+  ok 1 tests\e2e\core-loop.spec.ts:128:5 › viewer can enter a room from the lobby and see the room shell (2.1s)
+  ok 2 tests\e2e\core-loop.spec.ts:148:5 › room state moves deterministically from offline to preparing and back (2.8s)
+  ok 3 tests\e2e\core-loop.spec.ts:183:5 › broadcast booth route is reachable for operational validation (1.0s)
+
+  3 passed (25.8s)

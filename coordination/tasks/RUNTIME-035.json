@@ -1,0 +1,121 @@
+{
+  "schema_version": 2,
+  "task": {
+    "id": "RUNTIME-035",
+    "source": "portfolio-APP-035",
+    "issue": "https://github.com/azfalot/naughtybox/issues/35"
+  },
+  "goal": "Hacer reproducible cabina local sin crear otroPostgreSQL",
+  "assignment": {
+    "role": "implementer",
+    "engine": "codex"
+  },
+  "state": "WAITING_CI",
+  "history": [
+    {
+      "state": "AVAILABLE",
+      "at": "2026-10-18T11:37:20.242Z"
+    },
+    {
+      "state": "PLANNING",
+      "at": "2026-10-18T11:37:20.242Z"
+    },
+    {
+      "state": "IMPLEMENTING",
+      "at": "2026-10-18T11:43:00.169Z"
+    },
+    {
+      "state": "TESTING",
+      "at": "2026-10-18T11:43:00.171Z"
+    },
+    {
+      "state": "WAITING_CI",
+      "at": "2026-10-18T11:55:08.398Z"
+    }
+  ],
+  "scope": {
+    "bounded_context": "streaming-runtime",
+    "allowed": [
+      "infra/docker/docker-compose.yml",
+      "infra/docker/mediamtx.yml",
+      "scripts/unit-runtime-contract.mjs",
+      "docs/RUNTIME-035.md",
+      "README.md",
+      "coordination/tasks/RUNTIME-035.json",
+      "evidence/runtime035*",
+      "package.json",
+      ".github/workflows/runtime.yml",
+      ".env.example",
+      "scripts/smoke-webrtc.mjs",
+      ".gitignore",
+      "scripts/media-readiness.mjs",
+      "scripts/unit-media-readiness.mjs"
+    ],
+    "forbidden": [
+      "payments",
+      "production",
+      "other-project-services"
+    ]
+  },
+  "ownership": {
+    "branch": "feature/35-browser-runtime",
+    "base": "7e0e95b2a29417878b99b8f4ee884ce8c25c1a0a",
+    "databases": [
+      "naughtybox",
+      "naughtybox_test"
+    ]
+  },
+  "permissions": {
+    "git_write": true,
+    "github_write": true,
+    "merge": false,
+    "production": "denied"
+  },
+  "acceptance_criteria": [
+    {
+      "id": "SHARED_DB",
+      "description": "Compose referencia PostgreSQL compartido externo, no nuevo servicio/volumen",
+      "status": "PASSED"
+    },
+    {
+      "id": "WEBRTC",
+      "description": "Puertos de señalización/media y hosts locales configurados",
+      "status": "PASSED"
+    },
+    {
+      "id": "REAL_MEDIA",
+      "description": "Validación de disponibilidad y emisión sintética sin cámara real",
+      "status": "PASSED"
+    },
+    {
+      "id": "REVIEW",
+      "description": "PR y revisión independiente",
+      "status": "PENDING"
+    }
+  ],
+  "timestamps": {
+    "created": "2026-10-18T11:37:20.242Z",
+    "updated": "2026-10-18T11:37:20.242Z"
+  },
+  "verification": {
+    "build": "PASSED_ALL_FOUR_APPS",
+    "unit": "PASSED_14",
+    "mock_e2e": "PASSED_3",
+    "real_media": "PASSED_SYNTHETIC_H264_OPUS_HLS_PLAYBACK",
+    "security": "KNOWN_27_ADVISORIES_ISSUE36",
+    "ci": "RERUN_PENDING_AFTER_READINESS_FIX"
+  },
+  "evidence": {
+    "test_results": [
+      "evidence/runtime035-contract-red.txt",
+      "evidence/runtime035-contract-green.txt",
+      "evidence/runtime035-media-red.json",
+      "evidence/runtime035-media.json",
+      "evidence/runtime035-all-unit.txt",
+      "evidence/runtime035-build.txt",
+      "evidence/runtime035-foundation-browser.txt",
+      "evidence/runtime035-readiness-red.txt",
+      "evidence/runtime035-media-local-ci-mode.txt"
+    ]
+  }
+}
